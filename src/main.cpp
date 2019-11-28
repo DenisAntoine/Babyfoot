@@ -1,16 +1,59 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#include "SoftwareSerial.h"
 #include <DFRobotDFPlayerMini.h>
+#include <MD_Parola.h>
+#include <MD_MAX72xx.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_ADS1015.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 #include "Equipe.h"
 
-#define LED_PIN    6
-#define TX_PIN    10
-#define RX_PIN    11
-// How many NeoPixels are attached to the Arduino?
-#define LED_COUNT 60
+/*******************************************************
+/ Pinout
+/ TX -> DFPlayer TX via serial (pour economiser pin)
+/ RX -> DFPlayer RX via serial (pour economiser pin)
+/ D1 -> Wire SCL ADS1115 / OledShield
+/ D2 -> Wire SDA ADS1115 / OledShield
+/ D3 -> Ledstrip
+/ D4 -> 
+/ D0 -> Afficheur CS_PIN
+/ D5 -> Bouton Rouge / Pull up resistor 10k
+/ D6 -> Bouton Bleu / Pull up resistor 10k
+/ D7 -> Afficheur CLK_PIN
+/ D8 -> Afficheur DATA_PIN
+/
+********************************************************/
 
+#define BUTRED_PIN	D5
+#define BUTBLUE_PIN D6
+#define LED_PIN    	D3
+#define CLK_PIN   	D7
+#define DATA_PIN  	D8
+#define CS_PIN    	D0
+
+/*******************************************************
+/ Afficheur												
+/ Define the number of devices we have in the chain and
+/ the hardware interface
+/*******************************************************/
+#define MAX_DEVICES 4
+
+
+// Arbitrary output pins
+MD_Parola P = MD_Parola(DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+#define SPEED_TIME  25
+#define PAUSE_TIME  1000
+
+
+/*******************************************************
+/ Ledstrip												
+/*******************************************************/
+
+// How many NeoPixels are attached to the wemos
+#define LED_COUNT 60
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Argument 1 = Number of pixels in NeoPixel strip
@@ -22,62 +65,108 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 
-SoftwareSerial mySoftwareSerial(RX_PIN, TX_PIN); // RX, TX
+
+// *****************************************************
+// OLED Display Variables and constants
+// *****************************************************/
+Adafruit_SSD1306 display(OLED_RESET);
+
+// *****************************************************
+// OLED Display Variables and constants
+// *****************************************************/
 DFRobotDFPlayerMini myDFPlayer;
 
 
-EffetSonore monson(&myDFPlayer);
-EffetVisuel monvis(&strip);
+// *****************************************************
+// Equipes, effets sonores et visuels
+// *****************************************************/
+EffetSonore effetson(&myDFPlayer);
+EffetVisuel effetvis(&strip);
 Equipe equipeRouge(2);
 Equipe equipeBleu(1);
 
+
 void setup() {
-  mySoftwareSerial.begin(9600);
-  Serial.begin(115200);
-  
-  if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
-    Serial.println(F("Unable to begin:"));
-    Serial.println(F("1.Please recheck the connection!"));
-    Serial.println(F("2.Please insert the SD card!"));
-    while(true){
-      delay(0); // Code to compatible with ESP8266 watch dog.
-    }
-  }
-  Serial.println(F("DFPlayer Mini online."));
-  myDFPlayer.volume(10);  //Set volume value. From 0 to 30
+
+// initialize Buttons
+// du code ici
+
+// Afficheur 2 zones
+P.begin(2);
+P.setZone(0,0,1); // zone 0 = modules 0 et 1
+P.setZone(1,2,3); // zone 1 = modules 2 et 3
+P.displayZoneText(0, "0", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP); // test zone 0
+P.displayZoneText(0, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP);
+P.displayZoneText(1, "0", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP);
+P.displayZoneText(1, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP); // test zone 1
+
+
+// Initialize LCD DiSplay
+display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
+display.clearDisplay();
+display.setRotation(2);
+display.setTextSize(1);
+display.setTextColor(WHITE);
+display.setCursor(0,0);
+display.println("init...");
+display.display();
+
+// Initialize DFPlayer on serial
+Serial.begin(9600);
+display.println();
+display.println(F("DFRobot DFPlayer Mini Demo"));
+display.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+display.display();
+
+if (!myDFPlayer.begin(Serial)) {  //Use Serial1 to communicate with mp3.
+	display.println(F("Unable to begin:"));
+	display.println(F("1.Please recheck the connection!"));
+	display.println(F("2.Please insert the SD card!"));
+	display.display();
+	while(true){
+	  delay(0); // Code to compatible with ESP8266 watch dog.
+	}
+}
+display.clearDisplay();
+display.println(F("DFPlayer Mini online."));
+display.display();
+myDFPlayer.volume(10);  //Set volume value. From 0 to 30
  
+// Initialize Ledstrip
   
-  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+strip.show();            // Turn OFF all pixels ASAP
+strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
   
-  equipeRouge.setFolderCheer(1);
-	equipeRouge.setFolderGoal(2);
-	equipeRouge.setFolderWin(3);
-  equipeRouge.setEffetSonore(&monson);
-  equipeRouge.setEffetVisuel(&monvis);
+// Initialize les equipes
+equipeRouge.setFolderCheer(1);
+equipeRouge.setFolderGoal(2);
+equipeRouge.setFolderWin(3);
+equipeRouge.setEffetSonore(&effetson);
+equipeRouge.setEffetVisuel(&effetvis);
+equipeBleu.setFolderCheer(1);
+equipeBleu.setFolderGoal(2);
+equipeBleu.setFolderWin(3);
+equipeBleu.setEffetSonore(&effetson);
+equipeBleu.setEffetVisuel(&effetson);
 
-  equipeBleu.setFolderCheer(1);
-	equipeBleu.setFolderGoal(2);
-	equipeBleu.setFolderWin(3);
-  equipeBleu.setEffetSonore(&monson);
-  equipeBleu.setEffetVisuel(&monvis);
+equipeBleu.cheer();
+equipeBleu.goal();
+equipeBleu.increaseScore();
+	
+// on teste les methodes	
+display.clearDisplay();
+display.print("Score Bleu :");
+display.println(equipeBleu.getScore());
+display.display();
 
-
-
-
-  equipeBleu.cheer();
-  equipeBleu.goal();
-  equipeBleu.increaseScore();
-  Serial.print("Score Bleu :");
-  Serial.println(equipeBleu.getScore());
-  equipeBleu.decreaseScore();
-  Serial.print("Score Bleu :");
-  Serial.println(equipeBleu.getScore());
+equipeBleu.decreaseScore();
+display.print("Score Bleu :");
+display.println(equipeBleu.getScore());
   
-  equipeRouge.increaseScore();
-  equipeRouge.goal();
-  equipeRouge.win();
+equipeRouge.increaseScore();
+equipeRouge.goal();
+equipeRouge.win();
 
 }
 
