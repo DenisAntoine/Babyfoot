@@ -8,7 +8,7 @@
 #include <Adafruit_ADS1015.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <SmartPins.h>
+#include "SmartPins.h"
 
 #include "Equipe.h"
 
@@ -27,6 +27,8 @@
 / D8 -> Afficheur DATA_PIN
 /
 ********************************************************/
+// OLED
+#define OLED_RESET 0  // GPIO0
 
 #define BUTRED_PIN	D5
 #define BUTBLUE_PIN D6
@@ -36,15 +38,15 @@
 #define CS_PIN    	D0
 
 /*******************************************************
-/ Afficheur												
-/ Define the number of devices we have in the chain and
-/ the hardware interface
-/*******************************************************/
+ Afficheur												
+ Define the number of devices we have in the chain and
+ the hardware interface
+*******************************************************/
 #define MAX_DEVICES 4
-
+#define HARDWARE_TYPE MD_MAX72XX::PAROLA_HW
 
 // Arbitrary output pins
-MD_Parola P = MD_Parola(DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+MD_Parola P = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 #define SPEED_TIME  25
 #define PAUSE_TIME  1000
 
@@ -52,8 +54,8 @@ MD_Parola P = MD_Parola(DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 
 /*******************************************************
-/ Ledstrip												
-/*******************************************************/
+ Ledstrip												
+*******************************************************/
 
 // How many NeoPixels are attached to the wemos
 #define LED_COUNT 60
@@ -69,14 +71,15 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 
 
-// *****************************************************
-// OLED Display Variables and constants
-// *****************************************************/
+/*****************************************************
+OLED Display Variables and constants
+****************************************************/
 Adafruit_SSD1306 display(OLED_RESET);
 
 // *****************************************************
 // DFPlayer Mini and constants
-// *****************************************************/
+// *****************************************************
+
 DFRobotDFPlayerMini myDFPlayer;
 
 // *****************************************************
@@ -100,40 +103,40 @@ Equipe equipeBleu(1);
 / Boutons												
 / Define the number of devices we have in the chain and
 / the hardware interface
-/*******************************************************/
+*******************************************************/
 
 // define pin numbers for individual switches
 SmartPins spRed;
 SmartPins spBlue;
 #define DEBOUNCE_TIME 15
 
-void redChange(int hilo, int value))
+void redChange(int hilo, int value)
 {
   // boutton rouge
   if(value > 10000) { // appui de 10s reset des 2 scores
-	  equipeRouge.reset();
-	  equipeBleu.reset();
+	  equipeRouge.resetScore();
+	  equipeBleu.resetScore();
   }
-  else if (value > 5000) equipeRouge.reset(); // appui de 10s reset du score
+  else if (value > 5000) equipeRouge.resetScore(); // appui de 10s reset du score
   else equipeRouge.increaseScore(); // appui court score +1
 }
 
-void blueChange(int hilo, int value))
+void blueChange(int hilo, int value)
 {
   // boutton bleu
     if(value > 10000) { // appui de 10s reset des 2 scores
-	  equipeRouge.reset();
-	  equipeBleu.reset();
+	  equipeRouge.resetScore();
+	  equipeBleu.resetScore();
 	}
-  else if (value > 5000) equipeBleu.reset(); // appui de 10s reset du score
+  else if (value > 5000) equipeBleu.resetScore(); // appui de 10s reset du score
   else equipeBleu.increaseScore(); // appui court score +1
 }
 
-void redcheer();
+void redcheer()
 {
 	equipeRouge.cheer();
 }
-void bluecheer();
+void bluecheer()
 {
 	equipeBleu.cheer();
 }
@@ -142,12 +145,13 @@ void bluecheer();
 // test les buts sur ADS1115
 // *****************************************************/
 
-int testgoal(){
+int testgoal()
+{
 int goal = 0;
-if (ads.readADC_SingleEnded(0) < GOALDETECT){
+if (ads1115.readADC_SingleEnded(0) < GOALDETECT){
 	goal = 1;
 	}
-if (ads.readADC_SingleEnded(1) < GOALDETECT){
+if (ads1115.readADC_SingleEnded(1) < GOALDETECT){
 	goal = 2;
 	}
 return goal;
@@ -231,7 +235,7 @@ P.displayZoneText(1, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SC
 	equipeBleu.setFolderGoal(2);
 	equipeBleu.setFolderWin(3);
 	equipeBleu.setEffetSonore(&effetson);
-	equipeBleu.setEffetVisuel(&effetson);
+	equipeBleu.setEffetVisuel(&effetvis);
 
 	equipeBleu.cheer();
 	equipeBleu.goal();

@@ -17,7 +17,7 @@ void EffetVisuel::flash(uint32_t color, int wait, uint16_t pstart, uint16_t pend
 
 void EffetVisuel::cheer(int team)
 {
-	this -> flash(255, 10); //à definir
+	this -> flash(255, 10, 0, 60); //à definir
 }
 
 void EffetVisuel::goal(int team)
@@ -36,7 +36,7 @@ void EffetVisuel::theaterChase(uint32_t color, int wait) {
     for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
       _strip->clear();         //   Set all pixels in RAM to 0 (off)
       // 'c' counts up from 'b' to end of strip in steps of 3...
-      for(int c=b; c<strip.numPixels(); c += 3) {
+      for(int c=b; c<_strip->numPixels(); c += 3) {
         _strip->setPixelColor(c, color); // Set pixel 'c' to value 'color'
       }
       _strip->show(); // Update strip with new contents

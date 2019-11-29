@@ -8,7 +8,7 @@ class EffetVisuel
     public:
     	
 		EffetVisuel(Adafruit_NeoPixel* strip); //
-		void flash(uint32_t color, int wait);
+		void flash(uint32_t color, int wait, uint16_t pstart, uint16_t pend);
 		void cheer(int team);
 		void goal(int team);
 		void win(int team);
