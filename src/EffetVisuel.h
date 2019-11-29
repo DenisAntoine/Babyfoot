@@ -12,7 +12,9 @@ class EffetVisuel
 		void cheer(int team);
 		void goal(int team);
 		void win(int team);
-	
+	        void theaterChase(uint32_t color, int wait);
+		void rainbow(int wait);
+		void theaterChaseRainbow(int wait);
 	
     private:
 	
