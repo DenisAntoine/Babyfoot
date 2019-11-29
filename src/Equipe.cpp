@@ -1,92 +1,87 @@
-#include "EffetVisuel.h"
+#include "Equipe.h"
 
-EffetVisuel::EffetVisuel(Adafruit_NeoPixel* strip)
+Equipe::Equipe(int goalPin)
 {
-	_strip = strip;
+	m_goalpin = goalPin;
+	m_score=0; //score initial à 0
 }
 
-
-void EffetVisuel::flash(uint32_t color, int wait, uint16_t pstart, uint16_t pend) {
-  for(int i=pstart; i<pend; i++) { // For each pixel in strip...
-    _strip->setPixelColor(i, color);         //  Set pixel's color (in RAM)
-    _strip->show();                          //  Update strip to match
-    delay(wait);                           //  Pause for a moment
-  }
-}
-
-
-void EffetVisuel::cheer(int team)
+//acesseur 
+int Equipe::getScore() const
 {
-	this -> flash(255, 10); //à definir
+    return m_score;
 }
 
-void EffetVisuel::goal(int team)
-{} //à definir
-
-void EffetVisuel::win(int team)
-{} //à definir
-
-
-
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void EffetVisuel::theaterChase(uint32_t color, int wait) {
-  for(int a=0; a<10; a++) {  // Repeat 10 times...
-    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-      _strip->clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in steps of 3...
-      for(int c=b; c<strip.numPixels(); c += 3) {
-        _strip->setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      _strip->show(); // Update strip with new contents
-      delay(wait);  // Pause for a moment
-    }
-  }
+int Equipe::getPin() const
+{
+	return m_goalpin;
 }
 
-// Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
-void EffetVisuel::rainbow(int wait) {
-  // Hue of first pixel runs 5 complete loops through the color wheel.
-  // Color wheel has a range of 65536 but it's OK if we roll over, so
-  // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
-  // means we'll make 5*65536/256 = 1280 passes through this outer loop:
-  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
-    for(int i=0; i<_strip->numPixels(); i++) { // For each pixel in strip...
-      // Offset pixel hue by an amount to make one full revolution of the
-      // color wheel (range of 65536) along the length of the strip
-      // (strip.numPixels() steps):
-      int pixelHue = firstPixelHue + (i * 65536L / _strip->numPixels());
-      // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-      // optionally add saturation and value (brightness) (each 0 to 255).
-      // Here we're using just the single-argument hue variant. The result
-      // is passed through strip.gamma32() to provide 'truer' colors
-      // before assigning to each pixel:
-      _strip->setPixelColor(i, _strip->gamma32(_strip->ColorHSV(pixelHue)));
-    }
-    _strip->show(); // Update strip with new contents
-    delay(wait);  // Pause for a moment
-  }
+//
+void Equipe::increaseScore()
+{
+   m_score++;
+   if (m_score > MAXSCORE){
+	   m_score = 0; //
+   }
 }
 
-// Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
-void EffetVisuel::theaterChaseRainbow(int wait) {
-  int firstPixelHue = 0;     // First pixel starts at red (hue 0)
-  for(int a=0; a<30; a++) {  // Repeat 30 times...
-    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-      _strip->clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in increments of 3...
-      for(int c=b; c<_strip->numPixels(); c += 3) {
-        // hue of pixel 'c' is offset by an amount to make one full
-        // revolution of the color wheel (range 65536) along the length
-        // of the strip (strip.numPixels() steps):
-        int      hue   = firstPixelHue + c * 65536L / _strip->numPixels();
-        uint32_t color = _strip->gamma32(_strip->ColorHSV(hue)); // hue -> RGB
-        _strip->setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      _strip->show();                // Update strip with new contents
-      delay(wait);                 // Pause for a moment
-      firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
-    }
-  }
+
+void Equipe::decreaseScore()
+{
+   m_score--;
+   if (m_score < 0){
+	   m_score = MAXSCORE; //
+   }
+}
+
+void Equipe::resetScore()
+{
+   m_score=0;
+}
+
+void Equipe::cheer()
+{
+	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
+	_EffetVis -> cheer(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
+}
+void Equipe::goal()
+{
+	_EffetSon -> play(m_folderGoal); // passe le repertoire à jouer
+	_EffetVis-> goal(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
+	this -> increaseScore(); // traiter le cas de la victoire
+}
+void Equipe::win()
+{
+	_EffetSon -> play(m_folderWin); // passe le repertoire à jouer
+	_EffetVis -> win(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
+}
+
+void Equipe::setPin(int pin)
+{
+	m_goalpin = pin;
+}
+
+void Equipe::setFolderCheer(int folder)
+{
+	m_folderCheer = folder;
+}
+
+void Equipe::setFolderGoal(int folder)
+{
+	m_folderGoal = folder;
+}
+
+void Equipe::setFolderWin(int folder)
+{
+	m_folderWin = folder;
+}
+void Equipe::setEffetSonore(EffetSonore *son)
+{
+	_EffetSon = son;
+}
+
+void Equipe::setEffetVisuel(EffetVisuel *vis)
+{
+	_EffetVis = vis;
 }
