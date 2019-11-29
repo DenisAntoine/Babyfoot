@@ -8,5 +8,6 @@ EffetSonore::EffetSonore(DFRobotDFPlayerMini* dfp)
 //test de la methode play
 void EffetSonore::play(int folder)
 {
-	_DFPlayer->play(folder); //play folder
+long n = random(_DFPlayer->readFileCountsInFolder(folder));
+_DFPlayer->playFolder(folder, n); //play aleatoire dans folder
 }
