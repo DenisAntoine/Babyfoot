@@ -105,7 +105,6 @@ Equipe equipeBleu(1);
 // define pin numbers for individual switches
 SmartPins spRed;
 SmartPins spBlue;
-SmartPins spCheer;
 #define DEBOUNCE_TIME 15
 
 void redChange(int hilo, int value))
@@ -144,11 +143,11 @@ void bluecheer();
 // *****************************************************/
 
 int testgoal(){
-int goal =0;
+int goal = 0;
 if (ads.readADC_SingleEnded(0) < GOALDETECT){
 	goal = 1;
 	}
-if (ads.readADC_SingleEnded(0) < GOALDETECT){
+if (ads.readADC_SingleEnded(1) < GOALDETECT){
 	goal = 2;
 	}
 return goal;
@@ -276,7 +275,7 @@ void loop() {
     break;
   default:// pas but
     spRed.loop();// teste les boutons
-	spBlue.loop();
+    spBlue.loop();
     break;
 	}
 }
