@@ -42,6 +42,8 @@ void Equipe::resetScore()
 
 void Equipe::cheer()
 {
+	Serial.println("cheer");
+
 	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
 	_EffetVis -> cheer(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
 }

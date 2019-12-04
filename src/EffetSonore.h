@@ -1,6 +1,6 @@
 #ifndef DEF_EFFETSON
 #define DEF_EFFETSON
-
+#include <ESP8266TrueRandom.h>
 #include <DFRobotDFPlayerMini.h>
 
 class EffetSonore

@@ -1,13 +1,11 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <DFRobotDFPlayerMini.h>
-#include <MD_Parola.h>
-#include <MD_MAX72xx.h>
+#include <SoftwareSerial.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+
 #include "SmartPins.h"
 
 #include "Equipe.h"
@@ -16,39 +14,27 @@
 / Pinout
 / TX -> DFPlayer TX via serial (pour economiser pin)
 / RX -> DFPlayer RX via serial (pour economiser pin)
-/ D1 -> Wire SCL ADS1115 / OledShield
-/ D2 -> Wire SDA ADS1115 / OledShield
-/ D3 -> Ledstrip
-/ D4 -> 
-/ D0 -> Afficheur CS_PIN
+/ D1 -> Wire SCL ADS1115 / OledShield / afficheur
+/ D2 -> Wire SDA ADS1115 / OledShield / afficheur
+/ D3 -> OLED_RESET
+/ D4 -> Led Strip
+/ D0 -> 
 / D5 -> Bouton Rouge / Pull up resistor 10k
 / D6 -> Bouton Bleu / Pull up resistor 10k
-/ D7 -> Afficheur CLK_PIN
-/ D8 -> Afficheur DATA_PIN
+/ D7 -> Software serial RX
+/ D8 -> Software serial TX
 /
 ********************************************************/
 // OLED
-#define OLED_RESET 0  // GPIO0
+#define OLED_RESET D3  // GPIO0
 
 #define BUTRED_PIN	D5
 #define BUTBLUE_PIN D6
-#define LED_PIN    	D3
-#define CLK_PIN   	D7
-#define DATA_PIN  	D8
-#define CS_PIN    	D0
+#define LED_PIN    	D0
+#define SSRX_PIN   	D4
+#define SSTX_PIN  	D7
 
-/*******************************************************
- Afficheur												
- Define the number of devices we have in the chain and
- the hardware interface
-*******************************************************/
-#define MAX_DEVICES 4
-#define HARDWARE_TYPE MD_MAX72XX::PAROLA_HW
 
-// Arbitrary output pins
-MD_Parola P = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
-#define SPEED_TIME  25
-#define PAUSE_TIME  1000
 
 
 
@@ -74,12 +60,12 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 /*****************************************************
 OLED Display Variables and constants
 ****************************************************/
-Adafruit_SSD1306 display(OLED_RESET);
+//Adafruit_SSD1306 display(OLED_RESET);
 
 // *****************************************************
 // DFPlayer Mini and constants
 // *****************************************************
-
+SoftwareSerial mySoftwareSerial(SSRX_PIN,SSTX_PIN);
 DFRobotDFPlayerMini myDFPlayer;
 
 // *****************************************************
@@ -161,31 +147,50 @@ return goal;
 // setup
 // *****************************************************/
 void setup() {
+mySoftwareSerial.begin(9600);
+Serial.begin(115200);
 
-randomSeed(analogRead(A0)); // aleatoire sur pin non branchée
+
+
+
+// Initialize DFPlayer on softwareserial
+	
+	Serial.println();
+	Serial.println(F("DFRobot DFPlayer Mini Demo"));
+	Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+
+if (!myDFPlayer.begin(mySoftwareSerial)) {  //Utilisation de  softwareSerial pour communiquer
+    Serial.println(F("Pb communication:"));
+    Serial.println(F("1.SVP verifier connexion serie!"));
+    Serial.println(F("2.SVP verifier SDcard !"));
+    while(true);
+  }
+    Serial.println(F("DFPlayer Mini En ligne."));
+  
+ 	myDFPlayer.setTimeOut(500); // Définit un temps de time out sur la communication série à 500 ms
+	myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
+	myDFPlayer.volume(25);  //Set volume value. From 0 to 30
+	
+	delay(1000);
+	
+
+	Serial.println(F("DFPlayer Mini En ligne."));
+	//effetson.play(1); // joue l intro
+
 
 // initialize Buttons
 spRed.Timed(BUTRED_PIN,INPUT,DEBOUNCE_TIME,redChange);       // external pullup resistor 10k
 spBlue.Timed(BUTBLUE_PIN,INPUT,DEBOUNCE_TIME,blueChange);    // external pullup resistor 10k
-spRed.everyRandom(30000, 240000, redcheer); // encouragements aleatoires
-spBlue.everyRandom(30000, 240000, bluecheer); // encouragements aleatoires
+spRed.everyRandom(120000, 580000, redcheer); // encouragements aleatoires
+spBlue.everyRandom(120000, 580000, bluecheer); // encouragements aleatoires
 
 // Convertisseur analogiques pour buts
 ads1115.begin();
+Serial.println();
+Serial.println("ADS1115 demarre");
 
 
-
-// Afficheur 2 zones
-P.begin(2);
-P.setZone(0,0,1); // zone 0 = modules 0 et 1
-P.setZone(1,2,3); // zone 1 = modules 2 et 3
-P.displayZoneText(0, "0", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP); // test zone 0
-P.displayZoneText(0, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP);
-P.displayZoneText(1, "0", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP);
-P.displayZoneText(1, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP); // test zone 1
-
-
-// Initialize LCD DiSplay
+/* Initialize LCD DiSplay
 	display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
 	display.clearDisplay();
 	display.setRotation(2);
@@ -194,36 +199,19 @@ P.displayZoneText(1, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SC
 	display.setCursor(0,0);
 	display.println("init...");
 	display.display();
+*/
 
-// Initialize DFPlayer on serial
-	Serial.begin(9600);
-	display.println();
-	display.println(F("DFRobot DFPlayer Mini Demo"));
-	display.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
-	display.display();
 
-	if (!myDFPlayer.begin(Serial)) {  //Use Serial1 to communicate with mp3.
-		display.println(F("Unable to begin:"));
-		display.println(F("1.Please recheck the connection!"));
-		display.println(F("2.Please insert the SD card!"));
-		display.display();
-		while(true){
-		  delay(0); // Code to compatible with ESP8266 watch dog.
-		}
-	}
-	display.clearDisplay();
-	display.println(F("DFPlayer Mini online."));
-	display.display();
-	myDFPlayer.volume(10);  //Set volume value. From 0 to 30
-	effetson.play(1); // joue l intro
+
  
  // Initialize Ledstrip
   
 	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 	strip.show();            // Turn OFF all pixels ASAP
 	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-	effetvis.theaterChaseRainbow(10000);
-  
+	//effetvis.theaterChaseRainbow(10000);
+  Serial.println();
+  Serial.println("strip demarre");
   // Initialize les equipes
 	equipeRouge.setFolderCheer(1);
 	equipeRouge.setFolderGoal(2);
@@ -236,25 +224,36 @@ P.displayZoneText(1, "1", PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SC
 	equipeBleu.setFolderWin(3);
 	equipeBleu.setEffetSonore(&effetson);
 	equipeBleu.setEffetVisuel(&effetvis);
-
+	
+	Serial.println();
+  	Serial.println("Allez les bleus");
 	equipeBleu.cheer();
+	delay(10000);
+	
+	Serial.println();
+  	Serial.println("But bleus");
 	equipeBleu.goal();
-	equipeBleu.increaseScore();
+	Serial.print("Score Bleu :");
+	Serial.println(equipeBleu.getScore());
+	delay(10000);
 	
- // on teste les methodes	
-	display.clearDisplay();
-	display.print("Score Bleu :");
-	display.println(equipeBleu.getScore());
-	display.display();
-	
+	Serial.print("But annule :");
 	equipeBleu.decreaseScore();
-	display.print("Score Bleu :");
-	display.println(equipeBleu.getScore());
+	Serial.println(equipeBleu.getScore());
   
-	equipeRouge.increaseScore();
+	Serial.println();
+  	Serial.println("But Rouges");
 	equipeRouge.goal();
+	Serial.print("Score Rouges :");
+	Serial.println(equipeRouge.getScore());
+	
+	Serial.println();
+	Serial.println("Victoire Rouges");
 	equipeRouge.win();
-
+    
+	Serial.println();
+	Serial.println("Fin setup");
+	delay(60000);
 }
 
 void loop() {
@@ -265,21 +264,20 @@ void loop() {
   spBlue.everyRandom(redrmin, redrmax, bluecheer); // encouragements aleatoires
   */
   
-  
+  /*
   switch (testgoal()) {
   case 1:// but bleu
     equipeBleu.goal();
 	sprintf(score_buff, "%d", equipeBleu.getScore());
-	P.displayZoneText(0, score_buff, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP);
-    break;
+  break;
   case 2:// but rouge
     equipeRouge.goal();
 	sprintf(score_buff, "%d", equipeRouge.getScore());
-	P.displayZoneText(1, score_buff, PA_CENTER, SPEED_TIME, PAUSE_TIME, PA_SCROLL_UP, PA_SCROLL_UP);
-    break;
+   break;
   default:// pas but
     spRed.loop();// teste les boutons
     spBlue.loop();
     break;
 	}
+  */
 }
