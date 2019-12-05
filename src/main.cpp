@@ -100,22 +100,44 @@ void redChange(int hilo, int value)
 {
   // boutton rouge
   if(value > 10000) { // appui de 10s reset des 2 scores
+	  
+	  Serial.println();
+	  Serial.println(F("Bouton rouge >10s - reset scores"));
 	  equipeRouge.resetScore();
 	  equipeBleu.resetScore();
   }
-  else if (value > 5000) equipeRouge.resetScore(); // appui de 10s reset du score
-  else equipeRouge.increaseScore(); // appui court score +1
+  else if (value > 5000) {
+	  Serial.println();
+	  Serial.println(F("Bouton rouge >5s - reset rouge"));
+	  equipeRouge.resetScore(); // appui de 10s reset du score
+  }
+	
+  else {
+	  Serial.println();
+	  Serial.println(F("Bouton rouge - plus 1rouge"));
+	  equipeRouge.increaseScore(); // appui court score +1
+  }
 }
 
 void blueChange(int hilo, int value)
 {
   // boutton bleu
-    if(value > 10000) { // appui de 10s reset des 2 scores
+  if(value > 10000) { // appui de 10s reset des 2 scores
+	  Serial.println();
+	  Serial.println(F("Bouton bleu >10s - reset scores"));
 	  equipeRouge.resetScore();
 	  equipeBleu.resetScore();
 	}
-  else if (value > 5000) equipeBleu.resetScore(); // appui de 10s reset du score
-  else equipeBleu.increaseScore(); // appui court score +1
+  else if (value > 5000) {
+	  Serial.println();
+	  Serial.println(F("Bouton bleu >5s - reset bleu"));
+	  equipeBleu.resetScore(); // appui de 10s reset du score
+  	}
+  else {
+	  Serial.println();
+	  Serial.println(F("Bouton bleu - plus 1 bleu"));
+	  equipeBleu.increaseScore(); // appui court score +1
+        }
 }
 
 void redcheer()
@@ -257,27 +279,34 @@ Serial.println("ADS1115 demarre");
 }
 
 void loop() {
-  char score_buff[2];
+  
   /*
   Routine pour introduire et modifier la frequence des encouragements
   spRed.everyRandom(bluermin, bluermax, redcheer); // encouragements aleatoires
   spBlue.everyRandom(redrmin, redrmax, bluecheer); // encouragements aleatoires
   */
+  Serial.print(F("Score Rouge :"));
+  Serial.println(equipeRouge.getScore());
+  Serial.print(F("Score Bleu :"));
+  Serial.println(equipeBleu.getScore());
   
-  /*
   switch (testgoal()) {
   case 1:// but bleu
+    Serial.println();
+    Serial.println(F("But bleu !"));
     equipeBleu.goal();
-	sprintf(score_buff, "%d", equipeBleu.getScore());
+    
   break;
   case 2:// but rouge
+    Serial.println();
+    Serial.println(F("But Rouge !"))
     equipeRouge.goal();
-	sprintf(score_buff, "%d", equipeRouge.getScore());
-   break;
+
+  break;
   default:// pas but
     spRed.loop();// teste les boutons
     spBlue.loop();
     break;
-	}
-  */
+  }
+ 
 }
