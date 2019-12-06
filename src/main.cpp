@@ -231,14 +231,14 @@ void setup() {
 	Serial.println();
   	Serial.println("Allez les bleus");
 	equipeBleu.cheer();
-	delay(10000);
+	delay(5000);
 	
 	Serial.println();
   	Serial.println("But bleus");
 	equipeBleu.goal();
 	Serial.print("Score Bleu :");
 	Serial.println(equipeBleu.getScore());
-	delay(10000);
+	delay(5000);
 	
 	Serial.print("But annule :");
 	equipeBleu.decreaseScore();
@@ -256,7 +256,7 @@ void setup() {
     
 	Serial.println();
 	Serial.println("Fin setup");
-	delay(60000);
+	delay(5000);
 }
 
 void loop() {
@@ -280,7 +280,7 @@ switch (testgoal()) {
 		
   case 2:// but rouge
     Serial.println();
-    Serial.println(F("But Rouge !"))
+    Serial.println(F("But Rouge !"));
     equipeRouge.goal();
   break;
 		
