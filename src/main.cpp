@@ -5,7 +5,8 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
-
+#include <Adafruit_GFX.h>
+#include <Adafruit_LEDBackpack.h>
 #include "SmartPins.h"
 
 #include "Equipe.h"
@@ -31,6 +32,11 @@
 #define LED_PIN    	D0
 #define SSRX_PIN   	D4
 #define SSTX_PIN  	D7
+
+/*******************************************************
+/ Afficheur 7 segments I2C												
+*******************************************************/
+Adafruit_7segment scoreboard = Adafruit_7segment();
 
 
 /*******************************************************
@@ -205,9 +211,16 @@ void setup() {
 	Serial.println();
 	Serial.println("ADS1115 demarre");
 
+	// Initialize Afficheur 7 segments " 0: 0" faudra creer une fonction afficher (score1, score2)
+	scoreboard.begin(0x70);
+	scoreboard.writeDigitNum(0, 0, false);
+	scoreboard.drawColon(true);
+	scoreboard.writeDigitNum(3, 0, false);
+	scoreboard.writeDisplay();
+	
+		
 	// Initialize Ledstrip
-  
-	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 	strip.show();            // Turn OFF all pixels ASAP
 	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
 	
