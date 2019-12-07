@@ -5,7 +5,8 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
-
+#include <Adafruit_GFX.h>
+#include <Adafruit_LEDBackpack.h>
 #include "SmartPins.h"
 
 #include "Equipe.h"
@@ -31,6 +32,20 @@
 #define LED_PIN    	D0
 #define SSRX_PIN   	D4
 #define SSTX_PIN  	D7
+
+/*******************************************************
+/ Afficheur 7 segments I2C												
+*******************************************************/
+Adafruit_7segment scoreboard = Adafruit_7segment();
+
+void afficherScore(int score1, int score2){
+	scoreboard.writeDigitNum(0, (score1 / 10) % 10, false);
+	scoreboard.writeDigitNum(1, score1 %10, false);
+	scoreboard.drawColon(false);
+	scoreboard.writeDigitNum(3, (score2 / 10) % 10, false);
+	scoreboard.writeDigitNum(4, score2 %10, false);
+	scoreboard.writeDisplay();
+}
 
 
 /*******************************************************
@@ -59,7 +74,7 @@ DFRobotDFPlayerMini myDFPlayer;
 // ADS1115
 // *****************************************************/
 
-Adafruit_ADS1115 ads1115(0x49);
+Adafruit_ADS1115 ads1115;
 const uint16_t GOALDETECT = 10000; //sensibilité de detection
 
 // *****************************************************
@@ -85,49 +100,66 @@ SmartPins spBlue;
 / Methodes declenchees par Smartpins
 / boutons et encouragements
 ********************************************************/
+//
+void printscores(){
+	  Serial.print(F("Score Rouge :"));
+ 	  Serial.println(equipeRouge.getScore());
+ 	  Serial.print(F("Score Bleu :"));
+ 	  Serial.println(equipeBleu.getScore());
+}
+
+
+
 // boutton rouge
 void redChange(int hilo, int value)
 {
-  if(value > 10000) { // appui de 10s reset des 2 scores
-	  
+  if (value > 5000) { // appui de 10s reset des 2 scores
 	  Serial.println();
-	  Serial.println(F("Bouton rouge >10s - reset scores"));
+	  Serial.println(F("Bouton Rouge >10s - reset scores"));
 	  equipeRouge.resetScore();
 	  equipeBleu.resetScore();
-  }
-  else if (value > 5000) {
+	  printscores();
+	}
+  	else if (value > 2000) {
 	  Serial.println();
-	  Serial.println(F("Bouton rouge >5s - reset rouge"));
+	  Serial.println(F("Bouton Rouge >5s - reset rouge"));
 	  equipeRouge.resetScore(); // appui de 10s reset du score
-  }
-	
-  else {
+	  printscores();
+  	}
+  	else if (hilo == LOW) {
 	  Serial.println();
-	  Serial.println(F("Bouton rouge - plus 1 rouge"));
+	  Serial.println(F("Bouton Rouge - plus 1 rouge"));
 	  equipeRouge.increaseScore(); // appui court score +1
-  }
+	  printscores();
+    }
 }
 
 // boutton bleu
 void blueChange(int hilo, int value)
 {
-  if(value > 10000) { // appui de 10s reset des 2 scores
+   	if (value > 5000) { // appui de 10s reset des 2 scores
 	  Serial.println();
 	  Serial.println(F("Bouton bleu >10s - reset scores"));
 	  equipeRouge.resetScore();
 	  equipeBleu.resetScore();
+	  printscores();
 	}
-  else if (value > 5000) {
+  	else if (value > 2000) {
 	  Serial.println();
 	  Serial.println(F("Bouton bleu >5s - reset bleu"));
 	  equipeBleu.resetScore(); // appui de 10s reset du score
+	  printscores();
   	}
-  else {
+  	else if (hilo == LOW) {
 	  Serial.println();
 	  Serial.println(F("Bouton bleu - plus 1 bleu"));
 	  equipeBleu.increaseScore(); // appui court score +1
-        }
+	  printscores();
+    }
 }
+
+
+
 // Encouragements Rouges
 void redcheer()
 {
@@ -151,6 +183,12 @@ void bluecheer()
 
 int testgoal()
 {
+	/*
+	Serial.print("ADC0 =");
+	Serial.println(ads1115.readADC_SingleEnded(0));
+	Serial.print("ADC1 =");
+	Serial.println(ads1115.readADC_SingleEnded(1));
+	*/
 int goal = 0;
 if (ads1115.readADC_SingleEnded(0) < GOALDETECT){
 	goal = 1;
@@ -190,8 +228,10 @@ void setup() {
 	delay(1000);
 	
 	Serial.println(F("DFPlayer Mini En ligne."));
-	//effetson.play(1); // joue l intro
-
+	
+	// Initialize Afficheur 7 segments " 0: 0" faudra creer une fonction afficher (score1, score2)
+	scoreboard.begin(0x70);
+    afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
 	// initialize Buttons
 	spRed.Timed(BUTRED_PIN,INPUT,DEBOUNCE_TIME,redChange);       // external pullup resistor 10k
@@ -231,14 +271,14 @@ void setup() {
 	Serial.println();
   	Serial.println("Allez les bleus");
 	equipeBleu.cheer();
-	delay(10000);
+	delay(5000);
 	
 	Serial.println();
   	Serial.println("But bleus");
 	equipeBleu.goal();
 	Serial.print("Score Bleu :");
 	Serial.println(equipeBleu.getScore());
-	delay(10000);
+	delay(5000);
 	
 	Serial.print("But annule :");
 	equipeBleu.decreaseScore();
@@ -256,7 +296,7 @@ void setup() {
     
 	Serial.println();
 	Serial.println("Fin setup");
-	delay(60000);
+	delay(1000);
 }
 
 void loop() {
@@ -266,10 +306,7 @@ void loop() {
  spRed.everyRandom(bluermin, bluermax, redcheer); // encouragements aleatoires
  spBlue.everyRandom(redrmin, redrmax, bluecheer); // encouragements aleatoires
  */
- Serial.print(F("Score Rouge :"));
- Serial.println(equipeRouge.getScore());
- Serial.print(F("Score Bleu :"));
- Serial.println(equipeBleu.getScore());
+ 
 
 switch (testgoal()) {
   case 1:// but bleu
@@ -280,14 +317,14 @@ switch (testgoal()) {
 		
   case 2:// but rouge
     Serial.println();
-    Serial.println(F("But Rouge !"))
+    Serial.println(F("But Rouge !"));
     equipeRouge.goal();
   break;
 		
-  default:// pas but
-    spRed.loop();// teste les boutons
-    spBlue.loop();
-  break;
   }
+
+spRed.loop();// teste les boutons
+spBlue.loop();
+afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
  
 }
