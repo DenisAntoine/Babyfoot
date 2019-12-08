@@ -33,6 +33,9 @@
 #define SSRX_PIN   	D4
 #define SSTX_PIN  	D7
 
+const int SCOREVICTOIRE = 5;
+const int SCOREECART = 2;
+
 /*******************************************************
 / Afficheur 7 segments I2C												
 *******************************************************/
@@ -75,7 +78,7 @@ DFRobotDFPlayerMini myDFPlayer;
 // *****************************************************/
 
 Adafruit_ADS1115 ads1115;
-const uint16_t GOALDETECT = 10000; //sensibilité de detection
+const uint16_t GOALDETECT = 5000; //sensibilité de detection
 
 // *****************************************************
 // Equipes, effets sonores et visuels
@@ -244,13 +247,6 @@ void setup() {
 	
 	Serial.println();
 	Serial.println("ADS1115 demarre");
-
-	// Initialize Afficheur 7 segments " 0: 0" faudra creer une fonction afficher (score1, score2)
-	scoreboard.begin(0x70);
-	scoreboard.writeDigitNum(0, 0, false);
-	scoreboard.drawColon(true);
-	scoreboard.writeDigitNum(3, 0, false);
-	scoreboard.writeDisplay();
 	
 		
 	// Initialize Ledstrip
@@ -304,6 +300,9 @@ void setup() {
 	Serial.println();
 	Serial.println("Fin setup");
 	delay(1000);
+
+	equipeBleu.resetScore();
+	equipeRouge.resetScore();
 }
 
 void loop() {
@@ -320,12 +319,14 @@ switch (testgoal()) {
     Serial.println();
     Serial.println(F("But bleu !"));
     equipeBleu.goal();
+	printscores();
   break;
 		
   case 2:// but rouge
     Serial.println();
     Serial.println(F("But Rouge !"));
     equipeRouge.goal();
+	printscores();
   break;
 		
   }
@@ -333,5 +334,23 @@ switch (testgoal()) {
 spRed.loop();// teste les boutons
 spBlue.loop();
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
- 
+
+if ((equipeBleu.getScore() >= SCOREVICTOIRE) && (equipeBleu.getScore()-SCOREECART >= equipeRouge.getScore())){
+	Serial.println();
+	Serial.println("Victoire Bleus");
+	equipeBleu.win();
+	delay(30000);
+	equipeBleu.resetScore();
+	equipeRouge.resetScore();
+	}
+
+if ((equipeRouge.getScore() >= SCOREVICTOIRE) && (equipeRouge.getScore()-SCOREECART >= equipeBleu.getScore())){
+	Serial.println();
+	Serial.println("Victoire Rouges");
+	equipeRouge.win();
+	delay(30000);
+	equipeBleu.resetScore();
+	equipeRouge.resetScore();
+	}
+
 }
