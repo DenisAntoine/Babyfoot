@@ -35,6 +35,8 @@
 
 const int SCOREVICTOIRE = 5;
 const int SCOREECART = 2;
+bool pause = false;
+
 
 /*******************************************************
 / Afficheur 7 segments I2C												
@@ -116,6 +118,7 @@ void printscores(){
 // boutton rouge
 void redChange(int hilo, int value)
 {
+  pause = false; // action sur bouton enleve la pause
   if (value > 5000) { // appui de 10s reset des 2 scores
 	  Serial.println();
 	  Serial.println(F("Bouton Rouge >10s - reset scores"));
@@ -140,6 +143,7 @@ void redChange(int hilo, int value)
 // boutton bleu
 void blueChange(int hilo, int value)
 {
+	pause = false;// action sur bouton enleve la pause
    	if (value > 5000) { // appui de 10s reset des 2 scores
 	  Serial.println();
 	  Serial.println(F("Bouton bleu >10s - reset scores"));
@@ -168,7 +172,7 @@ void redcheer()
 {
 	Serial.println();
 	Serial.println(F("Allez les rouges"));
-	equipeRouge.cheer();
+	if (pause == false) equipeRouge.cheer(); //si pas en pause
 }
 
 // Encouragements Bleus
@@ -176,7 +180,7 @@ void bluecheer()
 {
 	Serial.println();
 	Serial.println(F("Allez les bleus"));
-	equipeBleu.cheer();
+	if (pause == false) equipeBleu.cheer(); //si pas en pause
 }
 
 /*****************************************************
@@ -315,30 +319,33 @@ void loop() {
 spRed.loop();// teste les boutons
 spBlue.loop();
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
+printscores(); // debug
 
-switch (testgoal()) {
-  case 1:// but bleu
-    Serial.println();
-    Serial.println(F("But bleu !"));
-    if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
-	Serial.println();
-	Serial.println("Victoire Bleus");
-	equipeBleu.win();
+if (pause == false) { //teste les buts si pas en pause
+	switch (testgoal()) {
+	  case 1:// but bleu
+	    Serial.println();
+	    Serial.println(F("But bleu !"));
+	    if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
+		Serial.println();
+		Serial.println("Victoire Bleus");
+		equipeBleu.win();
+		pause = true; // met en pause action sur un bouton pour repartir
+		}
+	    else equipeBleu.goal();		
+	  break;
+
+	  case 2:// but rouge
+	    Serial.println();
+	    Serial.println(F("But Rouge !"));
+	    if ((equipeRouge.getScore() +1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
+		Serial.println();
+		Serial.println("Victoire Rouges");
+		equipeRouge.win();
+		pause = true; // met en pause action sur un bouton pour repartir
+		}
+	    else equipeRouge.goal();
+	  break;		
+	  }
 	}
-    else equipeBleu.goal();
-    printscores();		
-  break;
-		
-  case 2:// but rouge
-    Serial.println();
-    Serial.println(F("But Rouge !"));
-    if ((equipeRouge.getScore() +1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
-	Serial.println();
-	Serial.println("Victoire Rouges");
-	equipeRouge.win();
-	}
-    else equipeRouge.goal();
-    printscores();
-  break;		
-  }
 }
