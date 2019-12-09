@@ -89,6 +89,7 @@ EffetSonore effetson(&myDFPlayer);
 EffetVisuel effetvis(&strip);
 Equipe equipeRouge(1);
 Equipe equipeBleu(2);
+Equipe equipetest(1, &ads1115, &effetson, &effetvis); // test du constructeur complet
 
 /*******************************************************
 / Definition Boutons												
