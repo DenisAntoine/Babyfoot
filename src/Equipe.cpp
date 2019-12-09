@@ -51,12 +51,13 @@ void Equipe::goal()
 {
 	_EffetSon -> play(m_folderGoal); // passe le repertoire à jouer
 	_EffetVis-> goal(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
-	this -> increaseScore(); // traiter le cas de la victoire
+	this -> increaseScore();
 }
 void Equipe::win()
 {
 	_EffetSon -> play(m_folderWin); // passe le repertoire à jouer
 	_EffetVis -> win(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
+	this -> increaseScore(); // comptabilise le but victorieux
 }
 
 void Equipe::setPin(int pin)
