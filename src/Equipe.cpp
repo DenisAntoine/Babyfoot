@@ -11,7 +11,7 @@ Equipe::Equipe(int goalPin, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisu
 	m_goalpin = goalPin;
 	_ads1115 = _ads;
 	_EffetSon = _son;
-	_EffetVis = _visu
+	_EffetVis = _visu;
 	m_score=0; //score initial à 0
 }
 
