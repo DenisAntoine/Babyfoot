@@ -6,6 +6,23 @@ Equipe::Equipe(int goalPin)
 	m_score=0; //score initial à 0
 }
 
+Equipe::Equipe(int goalPin, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu)
+{
+	m_goalpin = goalPin;
+	_ads1115 = _ads;
+	_EffetSon = _son;
+	_EffetVis = _visu
+	m_score=0; //score initial à 0
+}
+
+bool Equipe::testgoal(uint16_t seuildetect){
+	bool goal = false;
+	if (_ads1115 -> readADC_SingleEnded(m_goalpin) < seuildetect){
+		goal = true;
+		}
+	return goal;
+}
+
 //acesseur 
 int Equipe::getScore() const
 {
