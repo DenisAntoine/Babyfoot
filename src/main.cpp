@@ -312,45 +312,33 @@ void loop() {
  spRed.everyRandom(bluermin, bluermax, redcheer); // encouragements aleatoires
  spBlue.everyRandom(redrmin, redrmax, bluecheer); // encouragements aleatoires
  */
- 
+spRed.loop();// teste les boutons
+spBlue.loop();
+afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
 switch (testgoal()) {
   case 1:// but bleu
     Serial.println();
     Serial.println(F("But bleu !"));
-    equipeBleu.goal();
-	printscores();
+    if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
+	Serial.println();
+	Serial.println("Victoire Bleus");
+	equipeBleu.win();
+	}
+    else equipeBleu.goal();
+    printscores();		
   break;
 		
   case 2:// but rouge
     Serial.println();
     Serial.println(F("But Rouge !"));
-    equipeRouge.goal();
-	printscores();
-  break;
-		
-  }
-
-spRed.loop();// teste les boutons
-spBlue.loop();
-afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
-
-if ((equipeBleu.getScore() >= SCOREVICTOIRE) && (equipeBleu.getScore()-SCOREECART >= equipeRouge.getScore())){
-	Serial.println();
-	Serial.println("Victoire Bleus");
-	equipeBleu.win();
-	delay(30000);
-	equipeBleu.resetScore();
-	equipeRouge.resetScore();
-	}
-
-if ((equipeRouge.getScore() >= SCOREVICTOIRE) && (equipeRouge.getScore()-SCOREECART >= equipeBleu.getScore())){
+    if ((equipeRouge.getScore() +1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
 	Serial.println();
 	Serial.println("Victoire Rouges");
 	equipeRouge.win();
-	delay(30000);
-	equipeBleu.resetScore();
-	equipeRouge.resetScore();
 	}
-
+    else equipeRouge.goal();
+    printscores();
+  break;		
+  }
 }
