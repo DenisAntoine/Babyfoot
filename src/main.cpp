@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <Adafruit_ADS1015.h>
+//#include <Adafruit_ADS1015.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 #include "SmartPins.h"
@@ -87,9 +87,10 @@ const uint16_t GOALDETECT = 5000; //sensibilité de detection
 // *****************************************************/
 EffetSonore effetson(&myDFPlayer);
 EffetVisuel effetvis(&strip);
-Equipe equipeRouge(1);
-Equipe equipeBleu(2);
-Equipe equipetest(1, &ads1115, &effetson, &effetvis); // test du constructeur complet
+
+Equipe equipeBleu(0, &ads1115, &effetson, &effetvis); // test du constructeur complet
+Equipe equipeRouge(1, &ads1115, &effetson, &effetvis);
+
 
 /*******************************************************
 / Definition Boutons												
@@ -184,28 +185,6 @@ void bluecheer()
 	if (pause == false) equipeBleu.cheer(); //si pas en pause
 }
 
-/*****************************************************
-// test les buts sur ADS1115
-// Retourne 0 si pas but, 1 si bleu, 2 si rouge
-*******************************************************/
-
-int testgoal()
-{
-	/*
-	Serial.print("ADC0 =");
-	Serial.println(ads1115.readADC_SingleEnded(0));
-	Serial.print("ADC1 =");
-	Serial.println(ads1115.readADC_SingleEnded(1));
-	*/
-int goal = 0;
-if (ads1115.readADC_SingleEnded(0) < GOALDETECT){
-	goal = 1;
-	}
-if (ads1115.readADC_SingleEnded(1) < GOALDETECT){
-	goal = 2;
-	}
-return goal;
-}
 
 // *****************************************************
 // setup
@@ -320,33 +299,32 @@ void loop() {
 spRed.loop();// teste les boutons
 spBlue.loop();
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
-printscores(); // debug
 
-if (pause == false) { //teste les buts si pas en pause
-	switch (testgoal()) {
-	  case 1:// but bleu
-	    Serial.println();
+
+if (pause == false) {
+	printscores(); // debug
+	if(equipeBleu.testgoal(GOALDETECT) == true){
+		Serial.println();
 	    Serial.println(F("But bleu !"));
-	    if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
-		Serial.println();
-		Serial.println("Victoire Bleus");
-		equipeBleu.win();
-		pause = true; // met en pause action sur un bouton pour repartir
+		if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
+			Serial.println();
+			Serial.println("Victoire Bleus");
+			equipeBleu.win();
+			pause = true; // met en pause action sur un bouton pour repartir
 		}
-	    else equipeBleu.goal();		
-	  break;
-
-	  case 2:// but rouge
-	    Serial.println();
-	    Serial.println(F("But Rouge !"));
-	    if ((equipeRouge.getScore() +1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
-		Serial.println();
-		Serial.println("Victoire Rouges");
-		equipeRouge.win();
-		pause = true; // met en pause action sur un bouton pour repartir
-		}
-	    else equipeRouge.goal();
-	  break;		
-	  }
+		else equipeBleu.goal();
 	}
+	if(equipeRouge.testgoal(GOALDETECT) == true){
+		Serial.println();
+	    Serial.println(F("But Rouge !"));
+		if ((equipeRouge.getScore() + 1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
+			Serial.println();
+			Serial.println("Victoire Rouge");
+			equipeRouge.win();
+			pause = true; // met en pause action sur un bouton pour repartir
+		}
+		else equipeRouge.goal();
+	}
+}
+
 }

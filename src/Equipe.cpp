@@ -17,8 +17,11 @@ Equipe::Equipe(int goalPin, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisu
 
 bool Equipe::testgoal(uint16_t seuildetect){
 	bool goal = false;
+	//Serial.println(_ads1115 -> readADC_SingleEnded(m_goalpin));
 	if (_ads1115 -> readADC_SingleEnded(m_goalpin) < seuildetect){
 		goal = true;
+		
+		Serial.println("but detecte");
 		}
 	return goal;
 }
