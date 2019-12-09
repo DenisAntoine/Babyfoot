@@ -1,6 +1,6 @@
 #ifndef DEF_EQUIPE
 #define DEF_EQUIPE
-
+#include <Adafruit_ADS1015.h>
 #include "EffetSonore.h"
 #include "EffetVisuel.h"
 
@@ -11,7 +11,7 @@ class Equipe
     public:
     	
 		Equipe(int goalPin); //Constructeur
-		
+		Equipe(int goalPin, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu);
 		int getScore() const;
 		int getPin() const;
 		void increaseScore();
@@ -20,7 +20,7 @@ class Equipe
 		void cheer(); // encourage l equipe
 		void goal(); // but de l equipe
 		void win(); // victoire de l equipe
-		
+		bool testgoal(uint16_t seuildetect);// teste sur ADS
 		void setPin(int pin);
 		void setFolderCheer(int folder);
 		void setFolderGoal(int folder);
@@ -30,14 +30,14 @@ class Equipe
 
     private:
 		int m_score;
-		int	m_goalpin; //pin du dectecteur de but
+		int m_goalpin; //pin du dectecteur de but
 		
 		int m_folderCheer; //folder encouragements
 		int m_folderGoal; //folder but
 		int m_folderWin; //folder victoire
 		
 		
-		
+		Adafruit_ADS1115 *_ads1115;
 		EffetSonore *_EffetSon;
 		EffetVisuel *_EffetVis;
 };
