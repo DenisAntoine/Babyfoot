@@ -4,10 +4,27 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 #include <Wire.h>
-//#include <Adafruit_ADS1015.h>
+#include <OneButton.h>
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
-#include "SmartPins.h"
+
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+#else
+#include <WiFi.h>          //https://github.com/esp8266/Arduino
+#endif
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+
+//needed for library
+#include <DNSServer.h>
+#if defined(ESP8266)
+#include <ESP8266WebServer.h>
+#else
+#include <WebServer.h>
+#endif
+#include <WiFiManager.h>  
 
 #include "Equipe.h"
 
@@ -98,10 +115,11 @@ Equipe equipeRouge(1, &ads1115, &effetson, &effetvis);
 / the hardware interface
 *******************************************************/
 
+
 // define pin numbers for individual switches
-SmartPins spRed;
-SmartPins spBlue;
-#define DEBOUNCE_TIME 15
+OneButton butRed(BUTRED_PIN, true);
+OneButton butBlue(BUTBLUE_PIN, true);
+
 
 /*******************************************************
 / Methodes declenchees par Smartpins
@@ -118,53 +136,23 @@ void printscores(){
 
 
 // boutton rouge
-void redChange(int hilo, int value)
+void redClick()
 {
-  pause = false; // action sur bouton enleve la pause
-  if (value > 5000) { // appui de 10s reset des 2 scores
-	  Serial.println();
-	  Serial.println(F("Bouton Rouge >10s - reset scores"));
-	  equipeRouge.resetScore();
-	  equipeBleu.resetScore();
-	  printscores();
-	}
-  	else if (value > 2000) {
-	  Serial.println();
-	  Serial.println(F("Bouton Rouge >5s - reset rouge"));
-	  equipeRouge.resetScore(); // appui de 10s reset du score
-	  printscores();
-  	}
-  	else if (hilo == LOW) {
-	  Serial.println();
-	  Serial.println(F("Bouton Rouge - plus 1 rouge"));
-	  equipeRouge.increaseScore(); // appui court score +1
-	  printscores();
-    }
+pause = false; // action sur bouton enleve la pause
+Serial.println();
+Serial.println(F("Bouton Rouge - plus 1 rouge"));
+equipeRouge.increaseScore(); // appui court score +1
+printscores();
 }
 
 // boutton bleu
-void blueChange(int hilo, int value)
+void blueClick()
 {
-	pause = false;// action sur bouton enleve la pause
-   	if (value > 5000) { // appui de 10s reset des 2 scores
-	  Serial.println();
-	  Serial.println(F("Bouton bleu >10s - reset scores"));
-	  equipeRouge.resetScore();
-	  equipeBleu.resetScore();
-	  printscores();
-	}
-  	else if (value > 2000) {
-	  Serial.println();
-	  Serial.println(F("Bouton bleu >5s - reset bleu"));
-	  equipeBleu.resetScore(); // appui de 10s reset du score
-	  printscores();
-  	}
-  	else if (hilo == LOW) {
-	  Serial.println();
-	  Serial.println(F("Bouton bleu - plus 1 bleu"));
-	  equipeBleu.increaseScore(); // appui court score +1
-	  printscores();
-    }
+pause = false;// action sur bouton enleve la pause
+Serial.println();
+Serial.println(F("Bouton bleu - plus 1 bleu"));
+equipeBleu.increaseScore(); // appui court score +1
+printscores();
 }
 
 
@@ -193,6 +181,26 @@ void setup() {
 	mySoftwareSerial.begin(9600);
 	Serial.begin(115200);
 
+	WiFiManager wifiManager;
+	wifiManager.autoConnect("AutoConnectAP");
+
+	while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  	}
+  
+	// on affiche l'adresse IP attribuée pour le serveur DSN
+	Serial.println("");
+	Serial.print("IP address: ");
+	Serial.println(WiFi.localIP());
+  
+	//******* OTA ***************
+	// Hostname defaults to esp8266-[ChipID]
+	ArduinoOTA.setHostname("ESPTEST");
+	ArduinoOTA.begin();
+	//********* Fin OTA ***************
+
+
 // Initialize DFPlayer on softwareserial
 	
 	Serial.println();
@@ -220,11 +228,11 @@ void setup() {
 	scoreboard.begin(0x70);
     afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
-	// initialize Buttons
-	spRed.Timed(BUTRED_PIN,INPUT,DEBOUNCE_TIME,redChange);       // external pullup resistor 10k
-	spBlue.Timed(BUTBLUE_PIN,INPUT,DEBOUNCE_TIME,blueChange);    // external pullup resistor 10k
-	spRed.everyRandom(120000, 580000, redcheer); // encouragements aleatoires
-	spBlue.everyRandom(120000, 580000, bluecheer); // encouragements aleatoires
+
+// initialize Buttons
+
+	butRed.attachClick(redClick);
+	butBlue.attachClick(blueClick);
 
 	// Convertisseur analogiques pour buts
 	ads1115.begin();
@@ -249,44 +257,14 @@ void setup() {
 	equipeRouge.setEffetSonore(&effetson);
 	equipeRouge.setEffetVisuel(&effetvis);
 
-	equipeBleu.setFolderCheer(1);
-	equipeBleu.setFolderGoal(2);
-	equipeBleu.setFolderWin(3);
+	equipeBleu.setFolderCheer(4);
+	equipeBleu.setFolderGoal(5);
+	equipeBleu.setFolderWin(6);
 	equipeBleu.setEffetSonore(&effetson);
 	equipeBleu.setEffetVisuel(&effetvis);
 	
-	Serial.println();
-  	Serial.println("Allez les bleus");
-	equipeBleu.cheer();
-	delay(5000);
+	myDFPlayer.play(1);
 	
-	Serial.println();
-  	Serial.println("But bleus");
-	equipeBleu.goal();
-	Serial.print("Score Bleu :");
-	Serial.println(equipeBleu.getScore());
-	delay(5000);
-	
-	Serial.print("But annule :");
-	equipeBleu.decreaseScore();
-	Serial.println(equipeBleu.getScore());
-  
-	Serial.println();
-  	Serial.println("But Rouges");
-	equipeRouge.goal();
-	Serial.print("Score Rouges :");
-	Serial.println(equipeRouge.getScore());
-	
-	Serial.println();
-	Serial.println("Victoire Rouges");
-	equipeRouge.win();
-    
-	Serial.println();
-	Serial.println("Fin setup");
-	delay(1000);
-
-	equipeBleu.resetScore();
-	equipeRouge.resetScore();
 }
 
 void loop() {
@@ -296,13 +274,20 @@ void loop() {
  spRed.everyRandom(bluermin, bluermax, redcheer); // encouragements aleatoires
  spBlue.everyRandom(redrmin, redrmax, bluecheer); // encouragements aleatoires
  */
+butRed.tick();
+butBlue.tick();
+/*
 spRed.loop();// teste les boutons
 spBlue.loop();
+*/
+
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
+// Surveillance des demandes de mise à jour en OTA
+  ArduinoOTA.handle();
 
 if (pause == false) {
-	printscores(); // debug
+	//printscores(); // debug
 	if(equipeBleu.testgoal(GOALDETECT) == true){
 		Serial.println();
 	    Serial.println(F("But bleu !"));
