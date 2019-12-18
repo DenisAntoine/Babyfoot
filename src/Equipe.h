@@ -11,7 +11,7 @@ class Equipe
     public:
     	
 		Equipe(int goalPin); //Constructeur
-		Equipe(int goalPin, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu);
+		Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu);
 		int getScore() const;
 		int getPin() const;
 		void increaseScore();
@@ -35,7 +35,7 @@ class Equipe
 		int m_folderCheer; //folder encouragements
 		int m_folderGoal; //folder but
 		int m_folderWin; //folder victoire
-		
+		uint32_t m_color;//couleur associee
 		
 		Adafruit_ADS1115 *_ads1115;
 		EffetSonore *_EffetSon;

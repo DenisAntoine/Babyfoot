@@ -6,9 +6,10 @@ Equipe::Equipe(int goalPin)
 	m_score=0; //score initial à 0
 }
 
-Equipe::Equipe(int goalPin, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu)
+Equipe::Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu)
 {
 	m_goalpin = goalPin;
+	m_color = color;
 	_ads1115 = _ads;
 	_EffetSon = _son;
 	_EffetVis = _visu;
@@ -20,7 +21,7 @@ bool Equipe::testgoal(uint16_t seuildetect){
 	//Serial.println(_ads1115 -> readADC_SingleEnded(m_goalpin));
 	if (_ads1115 -> readADC_SingleEnded(m_goalpin) < seuildetect){
 		goal = true;
-		
+		this -> increaseScore(); // comptabilise le but
 		Serial.println("but detecte");
 		}
 	return goal;
@@ -65,19 +66,18 @@ void Equipe::cheer()
 	Serial.println("cheer");
 
 	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
-	_EffetVis -> cheer(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
+	_EffetVis -> cheer(m_color); // lance effet visuel
 }
 void Equipe::goal()
 {
 	_EffetSon -> play(m_folderGoal); // passe le repertoire à jouer
-	_EffetVis-> goal(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
-	this -> increaseScore();
+	_EffetVis-> goal(m_color); // lance effet visuel 
 }
 void Equipe::win()
 {
 	_EffetSon -> play(m_folderWin); // passe le repertoire à jouer
-	_EffetVis -> win(m_goalpin); // lance effet visuel le goal pin determine la couleur et le camp
-	this -> increaseScore(); // comptabilise le but victorieux
+	_EffetVis -> win(m_color); // lance effet visuel 
+	
 }
 
 void Equipe::setPin(int pin)

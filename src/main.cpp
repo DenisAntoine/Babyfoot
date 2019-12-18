@@ -9,6 +9,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 
+/*
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
@@ -16,7 +17,6 @@
 #endif
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-
 //needed for library
 #include <DNSServer.h>
 #if defined(ESP8266)
@@ -25,6 +25,7 @@
 #include <WebServer.h>
 #endif
 #include <WiFiManager.h>  
+*/
 
 #include "Equipe.h"
 
@@ -34,25 +35,26 @@
 / RX -> 
 / D1 -> Wire SCL ADS1115 / afficheur 7 segments I2C
 / D2 -> Wire SDA ADS1115 / afficheur 7 segments I2C
-/ D3 -> 
-/ D4 -> DFPlayer RX via softwareserial
-/ D0 -> Led Strip
+/ D3 -> DFPlayer RX via softwareserial
+/ D4 -> DFPlayer TX via softwareserial
+/ D0 -> 
 / D5 -> Bouton Rouge / Pull up resistor 10k
 / D6 -> Bouton Bleu / Pull up resistor 10k
-/ D7 -> DFPlayer TX via softwareserial
-/ D8 -> 
+/ D7 -> Bouton Select / Pull up resistor 10k
+/ D8 -> Led Strip
 /
 ********************************************************/
 
 #define BUTRED_PIN	D5
 #define BUTBLUE_PIN 	D6
-#define LED_PIN    	D0
-#define SSRX_PIN   	D4
-#define SSTX_PIN  	D7
+#define LED_PIN    	D8
+#define SSRX_PIN   	D3
+#define SSTX_PIN  	D4
 
 const int SCOREVICTOIRE = 5;
 const int SCOREECART = 2;
 bool pause = false;
+unsigned long timepause = 0;
 
 
 /*******************************************************
@@ -61,10 +63,11 @@ bool pause = false;
 Adafruit_7segment scoreboard = Adafruit_7segment();
 
 void afficherScore(int score1, int score2){
-	scoreboard.writeDigitNum(0, (score1 / 10) % 10, false);
+	scoreboard.clear();
+	if ((score1 / 10) % 10 > 0 ) scoreboard.writeDigitNum(0, (score1 / 10) % 10, false);
 	scoreboard.writeDigitNum(1, score1 %10, false);
 	scoreboard.drawColon(false);
-	scoreboard.writeDigitNum(3, (score2 / 10) % 10, false);
+	if ((score2 / 10) % 10 > 0 ) scoreboard.writeDigitNum(3, (score2 / 10) % 10, false);
 	scoreboard.writeDigitNum(4, score2 %10, false);
 	scoreboard.writeDisplay();
 }
@@ -84,7 +87,10 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
-
+const uint32_t COL_RED = strip.Color(255,   0,   0);
+const uint32_t COL_GREEN = strip.Color(0,   255,   0);
+const uint32_t COL_BLUE = strip.Color(0,   0,   255);
+const uint32_t COL_WHITE = strip.Color(127, 127, 127);
 
 // *****************************************************
 // DFPlayer Mini
@@ -105,8 +111,8 @@ const uint16_t GOALDETECT = 5000; //sensibilité de detection
 EffetSonore effetson(&myDFPlayer);
 EffetVisuel effetvis(&strip);
 
-Equipe equipeBleu(0, &ads1115, &effetson, &effetvis); // test du constructeur complet
-Equipe equipeRouge(1, &ads1115, &effetson, &effetvis);
+Equipe equipeBleu(0,COL_BLUE, &ads1115, &effetson, &effetvis); // test du constructeur complet
+Equipe equipeRouge(1,COL_RED, &ads1115, &effetson, &effetvis);
 
 
 /*******************************************************
@@ -154,8 +160,12 @@ Serial.println(F("Bouton bleu - plus 1 bleu"));
 equipeBleu.increaseScore(); // appui court score +1
 printscores();
 }
-
-
+void redLong(){
+	equipeRouge.resetScore();
+}
+void blueLong(){
+	equipeBleu.resetScore();
+}
 
 // Encouragements Rouges
 void redcheer()
@@ -181,6 +191,38 @@ void setup() {
 	mySoftwareSerial.begin(9600);
 	Serial.begin(115200);
 
+// Initialize Afficheur 7 segments " 0: 0" 
+	scoreboard.begin(0x70);
+
+/*
+	effetvis.flash(COL_RED, 0, 0, 29);
+	effetvis.flash(COL_BLUE, 0, 30, 60);
+	delay(1000);
+
+	effetvis.theaterChase(COL_RED,10);
+	delay(1000);
+
+	effetvis.theaterChase(COL_BLUE,10);
+	delay(1000);
+
+	effetvis.theaterChaseRainbow(10);
+	delay(5000);
+	
+	effetvis.rainbow(100);
+	delay(1000);
+
+	effetvis.whiteOverRainbow(100,5);
+	delay(1000);
+
+	effetvis.pulseWhite(10);
+	delay(1000);
+
+*/
+	
+  	
+
+
+/*
 	WiFiManager wifiManager;
 	wifiManager.autoConnect("AutoConnectAP");
 
@@ -194,12 +236,12 @@ void setup() {
 	Serial.print("IP address: ");
 	Serial.println(WiFi.localIP());
   
-	//******* OTA ***************
+	//OTA
 	// Hostname defaults to esp8266-[ChipID]
 	ArduinoOTA.setHostname("ESPTEST");
 	ArduinoOTA.begin();
-	//********* Fin OTA ***************
-
+	// Fin OTA 
+*/
 
 // Initialize DFPlayer on softwareserial
 	
@@ -224,16 +266,14 @@ void setup() {
 	
 	Serial.println(F("DFPlayer Mini En ligne."));
 	
-	// Initialize Afficheur 7 segments " 0: 0" faudra creer une fonction afficher (score1, score2)
-	scoreboard.begin(0x70);
-    afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
-
+	
 
 // initialize Buttons
 
 	butRed.attachClick(redClick);
 	butBlue.attachClick(blueClick);
-
+	butRed.attachLongPressStop(redLong);
+	butBlue.attachLongPressStop(blueLong);
 	// Convertisseur analogiques pour buts
 	ads1115.begin();
 	
@@ -241,75 +281,77 @@ void setup() {
 	Serial.println("ADS1115 demarre");
 	
 		
-	// Initialize Ledstrip
-  	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-	strip.show();            // Turn OFF all pixels ASAP
-	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-	
-	Serial.println();
-	Serial.println("strip demarre");
-  	//effetvis.theaterChaseRainbow(10000);
 	
 	// Initialize les equipes
 	equipeRouge.setFolderCheer(1);
 	equipeRouge.setFolderGoal(2);
 	equipeRouge.setFolderWin(3);
-	equipeRouge.setEffetSonore(&effetson);
-	equipeRouge.setEffetVisuel(&effetvis);
+	
 
 	equipeBleu.setFolderCheer(4);
 	equipeBleu.setFolderGoal(5);
 	equipeBleu.setFolderWin(6);
-	equipeBleu.setEffetSonore(&effetson);
-	equipeBleu.setEffetVisuel(&effetvis);
 	
 	myDFPlayer.play(1);
 	
+	// Initialize Ledstrip
+  	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+	strip.show();            // Turn OFF all pixels ASAP
+	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+	Serial.println();
+	Serial.println("strip demarre");
+	effetvis.flash(COL_RED, 100, 1, 30);
+	effetvis.flash(COL_BLUE, 100, 30, 59);
+	delay(1000);
+	equipeRouge.goal();
+	equipeBleu.goal();
 }
 
 void loop() {
-  
- /*
- Routine pour introduire et modifier la frequence des encouragements
- spRed.everyRandom(bluermin, bluermax, redcheer); // encouragements aleatoires
- spBlue.everyRandom(redrmin, redrmax, bluecheer); // encouragements aleatoires
- */
+
+ 
 butRed.tick();
 butBlue.tick();
-/*
-spRed.loop();// teste les boutons
-spBlue.loop();
-*/
 
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
 // Surveillance des demandes de mise à jour en OTA
-  ArduinoOTA.handle();
+  //ArduinoOTA.handle();
 
 if (pause == false) {
 	//printscores(); // debug
 	if(equipeBleu.testgoal(GOALDETECT) == true){
 		Serial.println();
 	    Serial.println(F("But bleu !"));
+		afficherScore(equipeBleu.getScore(),equipeRouge.getScore()); //affichage immediat
 		if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
 			Serial.println();
 			Serial.println("Victoire Bleus");
 			equipeBleu.win();
 			pause = true; // met en pause action sur un bouton pour repartir
+			timepause = millis();
 		}
 		else equipeBleu.goal();
 	}
 	if(equipeRouge.testgoal(GOALDETECT) == true){
 		Serial.println();
 	    Serial.println(F("But Rouge !"));
+		afficherScore(equipeBleu.getScore(),equipeRouge.getScore());//affichage immediat
 		if ((equipeRouge.getScore() + 1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
 			Serial.println();
 			Serial.println("Victoire Rouge");
 			equipeRouge.win();
 			pause = true; // met en pause action sur un bouton pour repartir
+			timepause = millis();
 		}
 		else equipeRouge.goal();
 	}
+}
+else if (millis() > timepause +30000) { //fin pause au bout de 30 secondes
+	pause = false;
+	timepause = 0;
+	equipeRouge.resetScore();
+	equipeBleu.resetScore();
 }
 
 }
