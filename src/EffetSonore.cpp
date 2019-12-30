@@ -3,6 +3,7 @@
 EffetSonore::EffetSonore(DFRobotDFPlayerMini* dfp)
 {
 	_DFPlayer = dfp;
+	m_lastSound =0;
 }
 
 //test de la methode play
@@ -22,4 +23,8 @@ _DFPlayer->playFolder(folder, n); //play aleatoire dans folder
 delay(1000);
 Serial.print("Etat : ");
 Serial.println(_DFPlayer->readState());
+}
+
+unsigned long EffetSonore::getLastSound(){
+	return m_lastSound;
 }

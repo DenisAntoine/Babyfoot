@@ -9,12 +9,14 @@ class EffetSonore
     	
 		EffetSonore(DFRobotDFPlayerMini* dfp); //
 		void play(int folder);
+		unsigned long getLastSound();
 	
 	
     private:
 			
 		// pointeur vers linstance DFPLAYER
 		DFRobotDFPlayerMini* _DFPlayer;
+		unsigned long m_lastSound;
 };
 
 #endif

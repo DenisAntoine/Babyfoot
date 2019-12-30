@@ -9,7 +9,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 
-/*
+
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
@@ -25,7 +25,7 @@
 #include <WebServer.h>
 #endif
 #include <WiFiManager.h>  
-*/
+
 
 #include "Equipe.h"
 
@@ -55,7 +55,9 @@ const int SCOREVICTOIRE = 5;
 const int SCOREECART = 2;
 bool pause = false;
 unsigned long timepause = 0;
-
+unsigned long periodeSon = 30000;
+unsigned long periodeCheerMin = 30000;
+unsigned long periodeCheerMax = 30000;
 
 /*******************************************************
 / Afficheur 7 segments I2C												
@@ -113,7 +115,7 @@ EffetVisuel effetvis(&strip);
 
 Equipe equipeBleu(0,COL_BLUE, &ads1115, &effetson, &effetvis); // test du constructeur complet
 Equipe equipeRouge(1,COL_RED, &ads1115, &effetson, &effetvis);
-
+Equipe equipeBlanche(2,COL_WHITE, &ads1115, &effetson, &effetvis);
 
 /*******************************************************
 / Definition Boutons												
@@ -222,7 +224,7 @@ void setup() {
   	
 
 
-/*
+
 	WiFiManager wifiManager;
 	wifiManager.autoConnect("AutoConnectAP");
 
@@ -241,7 +243,7 @@ void setup() {
 	ArduinoOTA.setHostname("ESPTEST");
 	ArduinoOTA.begin();
 	// Fin OTA 
-*/
+
 
 // Initialize DFPlayer on softwareserial
 	
@@ -292,6 +294,12 @@ void setup() {
 	equipeBleu.setFolderGoal(5);
 	equipeBleu.setFolderWin(6);
 	
+	equipeBlanche.setFolderCheer(7);
+	equipeBlanche.setFolderGoal(8);
+	equipeBlanche.setFolderWin(9);
+
+
+
 	myDFPlayer.play(1);
 	
 	// Initialize Ledstrip
@@ -301,26 +309,31 @@ void setup() {
 	Serial.println();
 	Serial.println("strip demarre");
 	effetvis.flash(COL_RED, 100, 1, 30);
-	effetvis.flash(COL_BLUE, 100, 30, 59);
+	effetvis.flash(COL_BLUE, 100, 30, 60);
+	effetvis.rainbow(100);
 	delay(1000);
-	equipeRouge.goal();
-	equipeBleu.goal();
+
+	
 }
 
 void loop() {
 
- 
+unsigned long cTime = millis();
+
+
 butRed.tick();
 butBlue.tick();
 
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
 // Surveillance des demandes de mise à jour en OTA
-  //ArduinoOTA.handle();
+ArduinoOTA.handle();
 
-if (pause == false) {
+if (pause == false) 
+{
 	//printscores(); // debug
-	if(equipeBleu.testgoal(GOALDETECT) == true){
+	if(equipeBleu.testgoal(GOALDETECT) == true)
+	{
 		Serial.println();
 	    Serial.println(F("But bleu !"));
 		afficherScore(equipeBleu.getScore(),equipeRouge.getScore()); //affichage immediat
@@ -333,11 +346,13 @@ if (pause == false) {
 		}
 		else equipeBleu.goal();
 	}
-	if(equipeRouge.testgoal(GOALDETECT) == true){
+	if(equipeRouge.testgoal(GOALDETECT) == true)
+	{
 		Serial.println();
 	    Serial.println(F("But Rouge !"));
 		afficherScore(equipeBleu.getScore(),equipeRouge.getScore());//affichage immediat
-		if ((equipeRouge.getScore() + 1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore())){
+		if ((equipeRouge.getScore() + 1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore()))
+		{
 			Serial.println();
 			Serial.println("Victoire Rouge");
 			equipeRouge.win();
@@ -346,8 +361,23 @@ if (pause == false) {
 		}
 		else equipeRouge.goal();
 	}
+	if (cTime > effetson.getLastSound()+ periodeSon)
+	{
+		if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
+		{
+			equipeBlanche.cheer();//on motive le groupe equipe neutre
+		}
+		else if (cTime > equipeBleu.getNextCheer(periodeCheerMin, periodeCheerMax))
+		{
+			equipeBleu.cheer(); // les bleus jouent a domicile
+		}
+		else if (cTime > equipeRouge.getNextCheer(periodeCheerMin, periodeCheerMin))
+		{
+			equipeRouge.cheer();
+		} //
+	}
 }
-else if (millis() > timepause +30000) { //fin pause au bout de 30 secondes
+else if (cTime > timepause +30000) { //fin pause au bout de 30 secondes
 	pause = false;
 	timepause = 0;
 	equipeRouge.resetScore();

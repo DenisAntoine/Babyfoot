@@ -14,6 +14,8 @@ Equipe::Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore*
 	_EffetSon = _son;
 	_EffetVis = _visu;
 	m_score=0; //score initial à 0
+	m_lastGoal =0;
+	m_lastCheer =0;
 }
 
 bool Equipe::testgoal(uint16_t seuildetect){
@@ -21,6 +23,7 @@ bool Equipe::testgoal(uint16_t seuildetect){
 	//Serial.println(_ads1115 -> readADC_SingleEnded(m_goalpin));
 	if (_ads1115 -> readADC_SingleEnded(m_goalpin) < seuildetect){
 		goal = true;
+		
 		this -> increaseScore(); // comptabilise le but
 		Serial.println("but detecte");
 		}
@@ -37,6 +40,16 @@ int Equipe::getPin() const
 {
 	return m_goalpin;
 }
+unsigned long Equipe::getLastGoal(){
+	return m_lastGoal;
+}
+
+unsigned long Equipe::getLastCheer(){
+	return m_lastCheer;
+}
+
+
+
 
 //
 void Equipe::increaseScore()
@@ -64,12 +77,13 @@ void Equipe::resetScore()
 void Equipe::cheer()
 {
 	Serial.println("cheer");
-
+	m_lastCheer= millis();
 	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
 	_EffetVis -> cheer(m_color); // lance effet visuel
 }
 void Equipe::goal()
 {
+	m_lastGoal = millis();
 	_EffetSon -> play(m_folderGoal); // passe le repertoire à jouer
 	_EffetVis-> goal(m_color); // lance effet visuel 
 }
@@ -107,4 +121,10 @@ void Equipe::setEffetSonore(EffetSonore *son)
 void Equipe::setEffetVisuel(EffetVisuel *vis)
 {
 	_EffetVis = vis;
+}
+
+unsigned long Equipe::getNextCheer(unsigned long tmin, unsigned long tmax){
+	unsigned long ctime = millis();
+	ctime += ESP8266TrueRandom.random(tmin, tmax);
+	return ctime;
 }

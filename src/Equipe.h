@@ -27,7 +27,9 @@ class Equipe
 		void setFolderWin(int folder);
 		void setEffetSonore(EffetSonore *son);
 		void setEffetVisuel(EffetVisuel *vis);
-
+		unsigned long getLastGoal();
+		unsigned long getLastCheer();
+		unsigned long getNextCheer(unsigned long tmin, unsigned long tmax); //renvoi le timestamp du prochain encouragement tmin/tmax  = periodes mini /maxi
     private:
 		int m_score;
 		int m_goalpin; //pin du dectecteur de but
@@ -36,7 +38,8 @@ class Equipe
 		int m_folderGoal; //folder but
 		int m_folderWin; //folder victoire
 		uint32_t m_color;//couleur associee
-		
+		unsigned long m_lastGoal;
+		unsigned long m_lastCheer;
 		Adafruit_ADS1115 *_ads1115;
 		EffetSonore *_EffetSon;
 		EffetVisuel *_EffetVis;
