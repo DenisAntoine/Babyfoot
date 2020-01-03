@@ -14,8 +14,8 @@ Equipe::Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore*
 	_EffetSon = _son;
 	_EffetVis = _visu;
 	m_score=0; //score initial à 0
-	m_lastGoal =0;
-	m_lastCheer =0;
+	m_lastGoal = millis();
+	m_lastCheer = millis();
 }
 
 bool Equipe::testgoal(uint16_t seuildetect){

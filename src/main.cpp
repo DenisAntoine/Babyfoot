@@ -9,7 +9,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 
-
+/*
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
@@ -25,7 +25,7 @@
 #include <WebServer.h>
 #endif
 #include <WiFiManager.h>  
-
+*/
 
 #include "Equipe.h"
 
@@ -55,9 +55,9 @@ const int SCOREVICTOIRE = 5;
 const int SCOREECART = 2;
 bool pause = false;
 unsigned long timepause = 0;
-unsigned long periodeSon = 30000;
-unsigned long periodeCheerMin = 30000;
-unsigned long periodeCheerMax = 30000;
+unsigned long periodeSon = 60000;
+unsigned long periodeCheerMin = 60000;
+unsigned long periodeCheerMax = 60000;
 
 /*******************************************************
 / Afficheur 7 segments I2C												
@@ -193,38 +193,24 @@ void setup() {
 	mySoftwareSerial.begin(9600);
 	Serial.begin(115200);
 
+	delay(1000);
+
 // Initialize Afficheur 7 segments " 0: 0" 
 	scoreboard.begin(0x70);
+	afficherScore(0,0);
+	Serial.println();
+	Serial.println(F("Afficheur demarre"));
+	delay(1000);
+
+// Initialize Ledstrip
+  	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+	strip.show();            // Turn OFF all pixels ASAP
+	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+	Serial.println();
+	Serial.println("strip demarre");
+	
 
 /*
-	effetvis.flash(COL_RED, 0, 0, 29);
-	effetvis.flash(COL_BLUE, 0, 30, 60);
-	delay(1000);
-
-	effetvis.theaterChase(COL_RED,10);
-	delay(1000);
-
-	effetvis.theaterChase(COL_BLUE,10);
-	delay(1000);
-
-	effetvis.theaterChaseRainbow(10);
-	delay(5000);
-	
-	effetvis.rainbow(100);
-	delay(1000);
-
-	effetvis.whiteOverRainbow(100,5);
-	delay(1000);
-
-	effetvis.pulseWhite(10);
-	delay(1000);
-
-*/
-	
-  	
-
-
-
 	WiFiManager wifiManager;
 	wifiManager.autoConnect("AutoConnectAP");
 
@@ -243,7 +229,7 @@ void setup() {
 	ArduinoOTA.setHostname("ESPTEST");
 	ArduinoOTA.begin();
 	// Fin OTA 
-
+*/
 
 // Initialize DFPlayer on softwareserial
 	
@@ -257,9 +243,7 @@ void setup() {
 	    Serial.println(F("2.SVP verifier SDcard !"));
 	    while(true);
 	  }
-    	
-	Serial.println(F("DFPlayer Mini En ligne."));
-  
+    
  	myDFPlayer.setTimeOut(500); // Définit un temps de time out sur la communication série à 500 ms
 	myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD); // lecture sur carte SD
 	myDFPlayer.volume(25);  //Set volume value. From 0 to 30
@@ -298,22 +282,17 @@ void setup() {
 	equipeBlanche.setFolderGoal(8);
 	equipeBlanche.setFolderWin(9);
 
-
+	Serial.println();
+	Serial.println("equipes initialisees");
 
 	myDFPlayer.play(1);
-	
-	// Initialize Ledstrip
-  	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-	strip.show();            // Turn OFF all pixels ASAP
-	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-	Serial.println();
-	Serial.println("strip demarre");
-	effetvis.flash(COL_RED, 100, 1, 30);
-	effetvis.flash(COL_BLUE, 100, 30, 60);
-	effetvis.rainbow(100);
+	effetvis.flash(COL_RED, 10, 1, 30);
+	effetvis.flash(COL_BLUE, 10, 30, 60);
+	effetvis.rainbow(10);
 	delay(1000);
 
-	
+	Serial.println();
+	Serial.println("fin setup");
 }
 
 void loop() {
@@ -327,7 +306,7 @@ butBlue.tick();
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
 // Surveillance des demandes de mise à jour en OTA
-ArduinoOTA.handle();
+//ArduinoOTA.handle();
 
 if (pause == false) 
 {

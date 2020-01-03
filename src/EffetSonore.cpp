@@ -3,7 +3,7 @@
 EffetSonore::EffetSonore(DFRobotDFPlayerMini* dfp)
 {
 	_DFPlayer = dfp;
-	m_lastSound =0;
+	m_lastSound =millis();
 }
 
 //test de la methode play
@@ -19,6 +19,7 @@ long n = ESP8266TrueRandom.random(1,_DFPlayer->readFileCountsInFolder(folder));
 Serial.print("Joue : ");
 Serial.println(n);
 
+m_lastSound =millis(); // last play
 _DFPlayer->playFolder(folder, n); //play aleatoire dans folder
 delay(1000);
 Serial.print("Etat : ");
