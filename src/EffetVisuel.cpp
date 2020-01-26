@@ -32,16 +32,20 @@ void EffetVisuel::strobe(uint32_t color, int strobecount, int flashdelay, uint16
 
 void EffetVisuel::cheer(uint32_t color)
 {
-	//à definir
+	this-> strobe(color, 4, 1, 0, _strip->numPixels());
+  this-> rainbow(0);
 }
 
 void EffetVisuel::goal(uint32_t color)
 {
-  this-> strobe(color, 15, 1, 0, _strip->numPixels());
+  this-> strobe(color, 10, 1, 0, _strip->numPixels());
 } //à definir
 
 void EffetVisuel::win(uint32_t color)
-{} //à definir
+{
+  this-> strobe(color, 15, 1, 0, _strip->numPixels());
+  this-> theaterChase(color, 10);
+} //à definir
 
 
 

@@ -9,7 +9,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 
-/*
+
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
@@ -25,7 +25,7 @@
 #include <WebServer.h>
 #endif
 #include <WiFiManager.h>  
-*/
+
 
 #include "Equipe.h"
 
@@ -35,8 +35,8 @@
 / RX -> 
 / D1 -> Wire SCL ADS1115 / afficheur 7 segments I2C
 / D2 -> Wire SDA ADS1115 / afficheur 7 segments I2C
-/ D3 -> DFPlayer RX via softwareserial
-/ D4 -> DFPlayer TX via softwareserial
+/ D3 -> DFPlayer TX via softwareserial
+/ D4 -> DFPlayer RX via softwareserial
 / D0 -> 
 / D5 -> Bouton Rouge / Pull up resistor 10k
 / D6 -> Bouton Bleu / Pull up resistor 10k
@@ -48,8 +48,9 @@
 #define BUTRED_PIN	D5
 #define BUTBLUE_PIN 	D6
 #define LED_PIN    	D8
-#define SSRX_PIN   	D3
-#define SSTX_PIN  	D4
+#define SSRX_PIN   	D4
+#define SSTX_PIN  	D3
+#define SOUND_PIN  	D7
 
 const int SCOREVICTOIRE = 5;
 const int SCOREECART = 2;
@@ -58,7 +59,7 @@ unsigned long timepause = 0;
 unsigned long periodeSon = 60000;
 unsigned long periodeCheerMin = 60000;
 unsigned long periodeCheerMax = 60000;
-
+int scompt =1;
 /*******************************************************
 / Afficheur 7 segments I2C												
 *******************************************************/
@@ -105,7 +106,7 @@ DFRobotDFPlayerMini myDFPlayer;
 // *****************************************************/
 
 Adafruit_ADS1115 ads1115;
-const uint16_t GOALDETECT = 5000; //sensibilité de detection
+const uint16_t GOALDETECT = 3000; //sensibilité de detection
 
 // *****************************************************
 // Equipes, effets sonores et visuels
@@ -113,8 +114,8 @@ const uint16_t GOALDETECT = 5000; //sensibilité de detection
 EffetSonore effetson(&myDFPlayer);
 EffetVisuel effetvis(&strip);
 
-Equipe equipeBleu(0,COL_BLUE, &ads1115, &effetson, &effetvis); // test du constructeur complet
-Equipe equipeRouge(1,COL_RED, &ads1115, &effetson, &effetvis);
+Equipe equipeBleu(1,COL_BLUE, &ads1115, &effetson, &effetvis); // test du constructeur complet
+Equipe equipeRouge(0,COL_RED, &ads1115, &effetson, &effetvis);
 Equipe equipeBlanche(2,COL_WHITE, &ads1115, &effetson, &effetvis);
 
 /*******************************************************
@@ -163,9 +164,11 @@ equipeBleu.increaseScore(); // appui court score +1
 printscores();
 }
 void redLong(){
+	pause = false;// action sur bouton enleve la pause
 	equipeRouge.resetScore();
 }
 void blueLong(){
+	pause = false;// action sur bouton enleve la pause
 	equipeBleu.resetScore();
 }
 
@@ -195,6 +198,10 @@ void setup() {
 
 	delay(1000);
 
+// Initialize sound sensor 	
+pinMode(SOUND_PIN,INPUT);
+
+
 // Initialize Afficheur 7 segments " 0: 0" 
 	scoreboard.begin(0x70);
 	afficherScore(0,0);
@@ -210,7 +217,7 @@ void setup() {
 	Serial.println("strip demarre");
 	
 
-/*
+
 	WiFiManager wifiManager;
 	wifiManager.autoConnect("AutoConnectAP");
 
@@ -229,7 +236,8 @@ void setup() {
 	ArduinoOTA.setHostname("ESPTEST");
 	ArduinoOTA.begin();
 	// Fin OTA 
-*/
+	Serial.println("");
+	Serial.print("code modifie par OTA");
 
 // Initialize DFPlayer on softwareserial
 	
@@ -299,6 +307,11 @@ void loop() {
 
 unsigned long cTime = millis();
 
+if (digitalRead(SOUND_PIN)==HIGH){
+	Serial.print("son detecte");
+	Serial.println(scompt);
+	scompt =scompt +1;
+}
 
 butRed.tick();
 butBlue.tick();
@@ -306,17 +319,17 @@ butBlue.tick();
 afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
 
 // Surveillance des demandes de mise à jour en OTA
-//ArduinoOTA.handle();
+ArduinoOTA.handle();
 
 if (pause == false) 
 {
 	//printscores(); // debug
-	if(equipeBleu.testgoal(GOALDETECT) == true)
+	if(equipeBleu.testgoal(GOALDETECT ) == true)
 	{
 		Serial.println();
 	    Serial.println(F("But bleu !"));
 		afficherScore(equipeBleu.getScore(),equipeRouge.getScore()); //affichage immediat
-		if ((equipeBleu.getScore() + 1 >= SCOREVICTOIRE) && (equipeBleu.getScore()+ 1 - SCOREECART >= equipeRouge.getScore())){
+		if ((equipeBleu.getScore() >= SCOREVICTOIRE) && (equipeBleu.getScore() - SCOREECART >= equipeRouge.getScore())){
 			Serial.println();
 			Serial.println("Victoire Bleus");
 			equipeBleu.win();
@@ -325,12 +338,12 @@ if (pause == false)
 		}
 		else equipeBleu.goal();
 	}
-	if(equipeRouge.testgoal(GOALDETECT) == true)
+	if(equipeRouge.testgoal(GOALDETECT *2.5) == true)
 	{
 		Serial.println();
 	    Serial.println(F("But Rouge !"));
 		afficherScore(equipeBleu.getScore(),equipeRouge.getScore());//affichage immediat
-		if ((equipeRouge.getScore() + 1 >= SCOREVICTOIRE) && (equipeRouge.getScore()+ 1 - SCOREECART >= equipeBleu.getScore()))
+		if ((equipeRouge.getScore() >= SCOREVICTOIRE) && (equipeRouge.getScore() - SCOREECART >= equipeBleu.getScore()))
 		{
 			Serial.println();
 			Serial.println("Victoire Rouge");
