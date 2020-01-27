@@ -56,8 +56,8 @@ const int SCOREVICTOIRE = 5;
 const int SCOREECART = 2;
 bool pause = false;
 unsigned long timepause = 0;
-unsigned long periodeSon = 60000;
-unsigned long periodeCheerMin = 60000;
+unsigned long periodeSon = 30000;
+unsigned long periodeCheerMin = 20000;
 unsigned long periodeCheerMax = 60000;
 int scompt =1;
 /*******************************************************
@@ -295,7 +295,7 @@ pinMode(SOUND_PIN,INPUT);
 
 	myDFPlayer.play(1);
 	effetvis.flash(COL_RED, 10, 1, 30);
-	effetvis.flash(COL_BLUE, 10, 30, 60);
+	effetvis.flash(COL_BLUE, 10, 30, LED_COUNT);
 	effetvis.rainbow(10);
 	delay(1000);
 
@@ -311,6 +311,7 @@ if (digitalRead(SOUND_PIN)==HIGH){
 	Serial.print("son detecte");
 	Serial.println(scompt);
 	scompt =scompt +1;
+	effetvis.strobe(COL_WHITE, 2,2, 0, LED_COUNT);
 }
 
 butRed.tick();
@@ -338,7 +339,7 @@ if (pause == false)
 		}
 		else equipeBleu.goal();
 	}
-	if(equipeRouge.testgoal(GOALDETECT *2.5) == true)
+	if(equipeRouge.testgoal(GOALDETECT *2.8) == true)
 	{
 		Serial.println();
 	    Serial.println(F("But Rouge !"));
@@ -355,18 +356,19 @@ if (pause == false)
 	}
 	if (cTime > effetson.getLastSound()+ periodeSon)
 	{
-		if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
-		{
-			equipeBlanche.cheer();//on motive le groupe equipe neutre
-		}
-		else if (cTime > equipeBleu.getNextCheer(periodeCheerMin, periodeCheerMax))
+		
+		if (cTime > equipeBleu.getNextCheer(periodeCheerMin, periodeCheerMax))
 		{
 			equipeBleu.cheer(); // les bleus jouent a domicile
 		}
 		else if (cTime > equipeRouge.getNextCheer(periodeCheerMin, periodeCheerMin))
 		{
 			equipeRouge.cheer();
-		} //
+		}
+		else if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
+		{
+			equipeBlanche.cheer();//on motive le groupe equipe neutre
+		}
 	}
 }
 else if (cTime > timepause +30000) { //fin pause au bout de 30 secondes
