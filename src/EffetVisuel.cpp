@@ -9,22 +9,22 @@ EffetVisuel::EffetVisuel(Adafruit_NeoPixel* strip)
 }
 
 
-void EffetVisuel::flash(uint32_t color, int wait, uint16_t pstart, uint16_t pend) {
+void EffetVisuel::flash(uint32_t color, uint16_t pstart, uint16_t pend) {
   
   for(int i=pstart; i<pend; i++) { // For each pixel in strip...
     _strip->setPixelColor(i, color);         //  Set pixel's color (in RAM)
     _strip->show();                          //  Update strip to match
-    delay(wait);                           //  Pause for a moment
+    //delay(wait);                           //  Pause for a moment
   }
 }
 
 void EffetVisuel::strobe(uint32_t color, int strobecount, int flashdelay, uint16_t pstart, uint16_t pend) {
   
   for(int i=0; i<strobecount; i++) { // For each pixel in strip...
-    this->flash(color, 0, pstart, pend);         //  Set pixel's color (in RAM)
+    this->flash(color, pstart, pend);         //  Set pixel's color (in RAM)
     
     delay(flashdelay);                           //  Pause for a moment
-    this ->flash(0, 0, pstart, pend);
+    this ->flash(0, pstart, pend);
     
     delay(flashdelay);
   }
@@ -32,8 +32,8 @@ void EffetVisuel::strobe(uint32_t color, int strobecount, int flashdelay, uint16
 
 void EffetVisuel::cheer(uint32_t color)
 {
-	this-> strobe(color, 4, 1, 0, _strip->numPixels());
-  this-> rainbow(0);
+	this-> strobe(color, 2, 1, 0, _strip->numPixels());
+  this-> rainbow(1);
 }
 
 void EffetVisuel::goal(uint32_t color)
@@ -43,8 +43,9 @@ void EffetVisuel::goal(uint32_t color)
 
 void EffetVisuel::win(uint32_t color)
 {
-  this-> strobe(color, 15, 1, 0, _strip->numPixels());
-  this-> theaterChase(color, 10);
+  this-> theaterChase(color, 100);
+  this-> rainbowFade2White(50, 1, 1);
+  
 } //à definir
 
 

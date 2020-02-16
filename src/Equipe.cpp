@@ -25,7 +25,7 @@ bool Equipe::testgoal(uint16_t seuildetect){
 		goal = true;
 		
 		this -> increaseScore(); // comptabilise le but
-		Serial.println("but detecte");
+		//Serial.println("but detecte");
 		}
 	return goal;
 }
@@ -76,7 +76,7 @@ void Equipe::resetScore()
 
 void Equipe::cheer()
 {
-	Serial.println("cheer");
+	//Serial.println("cheer");
 	m_lastCheer= millis();
 	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
 	_EffetVis -> cheer(m_color); // lance effet visuel
@@ -125,6 +125,6 @@ void Equipe::setEffetVisuel(EffetVisuel *vis)
 
 unsigned long Equipe::getNextCheer(unsigned long tmin, unsigned long tmax){
 	unsigned long ctime = millis();
-	ctime += ESP8266TrueRandom.random(tmin, tmax);
+	ctime += random(tmin, tmax);
 	return ctime;
 }

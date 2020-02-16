@@ -45,8 +45,8 @@
 /
 ********************************************************/
 
-#define BUTRED_PIN	D5
-#define BUTBLUE_PIN 	D6
+#define BUTRED_PIN	D6
+#define BUTBLUE_PIN 	D5
 #define LED_PIN    	D8
 #define SSRX_PIN   	D4
 #define SSTX_PIN  	D3
@@ -58,7 +58,7 @@ bool pause = false;
 unsigned long timepause = 0;
 unsigned long periodeSon = 30000;
 unsigned long periodeCheerMin = 20000;
-unsigned long periodeCheerMax = 60000;
+unsigned long periodeCheerMax = 100000;
 int scompt =1;
 /*******************************************************
 / Afficheur 7 segments I2C												
@@ -134,34 +134,34 @@ OneButton butBlue(BUTBLUE_PIN, true);
 / Methodes declenchees par Smartpins
 / boutons et encouragements
 ********************************************************/
-//
+/*
 void printscores(){
 	  Serial.print(F("Score Rouge :"));
  	  Serial.println(equipeRouge.getScore());
  	  Serial.print(F("Score Bleu :"));
  	  Serial.println(equipeBleu.getScore());
 }
-
+*/
 
 
 // boutton rouge
 void redClick()
 {
 pause = false; // action sur bouton enleve la pause
-Serial.println();
-Serial.println(F("Bouton Rouge - plus 1 rouge"));
+//Serial.println();
+//Serial.println(F("Bouton Rouge - plus 1 rouge"));
 equipeRouge.increaseScore(); // appui court score +1
-printscores();
+//printscores();
 }
 
 // boutton bleu
 void blueClick()
 {
 pause = false;// action sur bouton enleve la pause
-Serial.println();
-Serial.println(F("Bouton bleu - plus 1 bleu"));
+//Serial.println();
+//Serial.println(F("Bouton bleu - plus 1 bleu"));
 equipeBleu.increaseScore(); // appui court score +1
-printscores();
+//printscores();
 }
 void redLong(){
 	pause = false;// action sur bouton enleve la pause
@@ -175,16 +175,16 @@ void blueLong(){
 // Encouragements Rouges
 void redcheer()
 {
-	Serial.println();
-	Serial.println(F("Allez les rouges"));
+	//Serial.println();
+	//Serial.println(F("Allez les rouges"));
 	if (pause == false) equipeRouge.cheer(); //si pas en pause
 }
 
 // Encouragements Bleus
 void bluecheer()
 {
-	Serial.println();
-	Serial.println(F("Allez les bleus"));
+	//Serial.println();
+	//Serial.println(F("Allez les bleus"));
 	if (pause == false) equipeBleu.cheer(); //si pas en pause
 }
 
@@ -199,22 +199,22 @@ void setup() {
 	delay(1000);
 
 // Initialize sound sensor 	
-pinMode(SOUND_PIN,INPUT);
+// pinMode(SOUND_PIN,INPUT);
 
 
 // Initialize Afficheur 7 segments " 0: 0" 
 	scoreboard.begin(0x70);
 	afficherScore(0,0);
-	Serial.println();
-	Serial.println(F("Afficheur demarre"));
+	//Serial.println();
+	//Serial.println(F("Afficheur demarre"));
 	delay(1000);
 
 // Initialize Ledstrip
   	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 	strip.show();            // Turn OFF all pixels ASAP
 	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-	Serial.println();
-	Serial.println("strip demarre");
+	//Serial.println();
+	//Serial.println("strip demarre");
 	
 
 
@@ -223,32 +223,32 @@ pinMode(SOUND_PIN,INPUT);
 
 	while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
+    //Serial.print(".");
   	}
   
 	// on affiche l'adresse IP attribuée pour le serveur DSN
-	Serial.println("");
-	Serial.print("IP address: ");
-	Serial.println(WiFi.localIP());
+	//Serial.println("");
+	//Serial.print("IP address: ");
+	//Serial.println(WiFi.localIP());
   
 	//OTA
 	// Hostname defaults to esp8266-[ChipID]
 	ArduinoOTA.setHostname("ESPTEST");
 	ArduinoOTA.begin();
 	// Fin OTA 
-	Serial.println("");
-	Serial.print("code modifie par OTA");
+	//Serial.println("");
+	//Serial.print("code modifie par OTA");
 
 // Initialize DFPlayer on softwareserial
 	
-	Serial.println();
-	Serial.println(F("DFRobot DFPlayer Mini Demo"));
-	Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+	//Serial.println();
+	//Serial.println(F("DFRobot DFPlayer Mini Demo"));
+	//Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
 
 	if (!myDFPlayer.begin(mySoftwareSerial)) {  //Utilisation de  softwareSerial pour communiquer
-	    Serial.println(F("Pb communication:"));
-	    Serial.println(F("1.SVP verifier connexion serie!"));
-	    Serial.println(F("2.SVP verifier SDcard !"));
+	    //Serial.println(F("Pb communication:"));
+	    //Serial.println(F("1.SVP verifier connexion serie!"));
+	    //Serial.println(F("2.SVP verifier SDcard !"));
 	    while(true);
 	  }
     
@@ -258,7 +258,7 @@ pinMode(SOUND_PIN,INPUT);
 	
 	delay(1000);
 	
-	Serial.println(F("DFPlayer Mini En ligne."));
+	//Serial.println(F("DFPlayer Mini En ligne."));
 	
 	
 
@@ -271,8 +271,8 @@ pinMode(SOUND_PIN,INPUT);
 	// Convertisseur analogiques pour buts
 	ads1115.begin();
 	
-	Serial.println();
-	Serial.println("ADS1115 demarre");
+	//Serial.println();
+	//Serial.println("ADS1115 demarre");
 	
 		
 	
@@ -290,34 +290,34 @@ pinMode(SOUND_PIN,INPUT);
 	equipeBlanche.setFolderGoal(8);
 	equipeBlanche.setFolderWin(9);
 
-	Serial.println();
-	Serial.println("equipes initialisees");
+	//Serial.println();
+	//Serial.println("equipes initialisees");
 
 	myDFPlayer.play(1);
-	effetvis.flash(COL_RED, 10, 1, 30);
-	effetvis.flash(COL_BLUE, 10, 30, LED_COUNT);
+	effetvis.flash(COL_RED, 1, 30);
+	effetvis.flash(COL_BLUE, 30, LED_COUNT);
 	effetvis.rainbow(10);
 	delay(1000);
 
-	Serial.println();
-	Serial.println("fin setup");
+	//Serial.println();
+	//Serial.println("fin setup");
 }
 
 void loop() {
 
 unsigned long cTime = millis();
 
-if (digitalRead(SOUND_PIN)==HIGH){
-	Serial.print("son detecte");
-	Serial.println(scompt);
-	scompt =scompt +1;
-	effetvis.strobe(COL_WHITE, 2,2, 0, LED_COUNT);
+/*if (digitalRead(SOUND_PIN)==LOW){
+	//Serial.print("son detecte");
+	//Serial.println(scompt);
+	//scompt =scompt +1;
+	effetvis.strobe(COL_GREEN, 5 , 1, 0, LED_COUNT);
 }
-
+*/
 butRed.tick();
 butBlue.tick();
 
-afficherScore(equipeBleu.getScore(),equipeRouge.getScore());
+afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
 
 // Surveillance des demandes de mise à jour en OTA
 ArduinoOTA.handle();
@@ -327,51 +327,52 @@ if (pause == false)
 	//printscores(); // debug
 	if(equipeBleu.testgoal(GOALDETECT ) == true)
 	{
-		Serial.println();
-	    Serial.println(F("But bleu !"));
-		afficherScore(equipeBleu.getScore(),equipeRouge.getScore()); //affichage immediat
+		//Serial.println();
+	    //Serial.println(F("But bleu !"));
+		afficherScore(equipeRouge.getScore(),equipeBleu.getScore()); //affichage immediat
 		if ((equipeBleu.getScore() >= SCOREVICTOIRE) && (equipeBleu.getScore() - SCOREECART >= equipeRouge.getScore())){
-			Serial.println();
-			Serial.println("Victoire Bleus");
+			//Serial.println();
+			//Serial.println("Victoire Bleus");
 			equipeBleu.win();
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
+
 		}
 		else equipeBleu.goal();
 	}
 	if(equipeRouge.testgoal(GOALDETECT *2.8) == true)
 	{
-		Serial.println();
-	    Serial.println(F("But Rouge !"));
-		afficherScore(equipeBleu.getScore(),equipeRouge.getScore());//affichage immediat
+		//Serial.println();
+	    //Serial.println(F("But Rouge !"));
+		afficherScore(equipeRouge.getScore(),equipeBleu.getScore());//affichage immediat
 		if ((equipeRouge.getScore() >= SCOREVICTOIRE) && (equipeRouge.getScore() - SCOREECART >= equipeBleu.getScore()))
 		{
-			Serial.println();
-			Serial.println("Victoire Rouge");
+			//Serial.println();
+			//Serial.println("Victoire Rouge");
 			equipeRouge.win();
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
 		}
 		else equipeRouge.goal();
 	}
-	if (cTime > effetson.getLastSound()+ periodeSon)
-	{
-		
-		if (cTime > equipeBleu.getNextCheer(periodeCheerMin, periodeCheerMax))
+	cTime = millis();
+	if (cTime > effetson.getLastSound() + periodeSon) {
+
+	/*if (cTime > equipeBleu.getNextCheer(periodeCheerMin, periodeCheerMax)+ periodeSon)
 		{
 			equipeBleu.cheer(); // les bleus jouent a domicile
 		}
-		else if (cTime > equipeRouge.getNextCheer(periodeCheerMin, periodeCheerMin))
+	else if (cTime > equipeRouge.getNextCheer(periodeCheerMin, periodeCheerMax)+ periodeSon)
 		{
 			equipeRouge.cheer();
-		}
-		else if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
+		}*/
+	if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
 		{
 			equipeBlanche.cheer();//on motive le groupe equipe neutre
 		}
 	}
 }
-else if (cTime > timepause +30000) { //fin pause au bout de 30 secondes
+else if (cTime > timepause+10000) { //fin pause
 	pause = false;
 	timepause = 0;
 	equipeRouge.resetScore();
