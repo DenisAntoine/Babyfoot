@@ -9,7 +9,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 
-
+/*
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
@@ -25,7 +25,7 @@
 #include <WebServer.h>
 #endif
 #include <WiFiManager.h>  
-
+*/
 
 #include "Equipe.h"
 
@@ -213,10 +213,10 @@ void setup() {
   	strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 	strip.show();            // Turn OFF all pixels ASAP
 	strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-	//Serial.println();
-	//Serial.println("strip demarre");
+	Serial.println();
+	Serial.println("strip demarre");
 	
-
+/*
 
 	WiFiManager wifiManager;
 	wifiManager.autoConnect("AutoConnectAP");
@@ -233,22 +233,22 @@ void setup() {
   
 	//OTA
 	// Hostname defaults to esp8266-[ChipID]
-	ArduinoOTA.setHostname("ESPTEST");
-	ArduinoOTA.begin();
+	//ArduinoOTA.setHostname("ESPTEST");
+	//ArduinoOTA.begin();
 	// Fin OTA 
 	//Serial.println("");
 	//Serial.print("code modifie par OTA");
-
+*/
 // Initialize DFPlayer on softwareserial
 	
-	//Serial.println();
-	//Serial.println(F("DFRobot DFPlayer Mini Demo"));
-	//Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+	Serial.println();
+	Serial.println(F("DFRobot DFPlayer Mini Demo"));
+	Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
 
 	if (!myDFPlayer.begin(mySoftwareSerial)) {  //Utilisation de  softwareSerial pour communiquer
-	    //Serial.println(F("Pb communication:"));
-	    //Serial.println(F("1.SVP verifier connexion serie!"));
-	    //Serial.println(F("2.SVP verifier SDcard !"));
+	    Serial.println(F("Pb communication:"));
+	    Serial.println(F("1.SVP verifier connexion serie!"));
+	    Serial.println(F("2.SVP verifier SDcard !"));
 	    while(true);
 	  }
     
@@ -258,7 +258,7 @@ void setup() {
 	
 	delay(1000);
 	
-	//Serial.println(F("DFPlayer Mini En ligne."));
+	Serial.println(F("DFPlayer Mini En ligne."));
 	
 	
 
@@ -271,8 +271,8 @@ void setup() {
 	// Convertisseur analogiques pour buts
 	ads1115.begin();
 	
-	//Serial.println();
-	//Serial.println("ADS1115 demarre");
+	Serial.println();
+	Serial.println("ADS1115 demarre");
 	
 		
 	
@@ -290,8 +290,8 @@ void setup() {
 	equipeBlanche.setFolderGoal(8);
 	equipeBlanche.setFolderWin(9);
 
-	//Serial.println();
-	//Serial.println("equipes initialisees");
+	Serial.println();
+	Serial.println("equipes initialisees");
 
 	myDFPlayer.play(1);
 	effetvis.flash(COL_RED, 1, 30);
@@ -299,28 +299,21 @@ void setup() {
 	effetvis.rainbow(10);
 	delay(1000);
 
-	//Serial.println();
-	//Serial.println("fin setup");
+	Serial.println();
+	Serial.println("fin setup");
 }
 
 void loop() {
 
 unsigned long cTime = millis();
 
-/*if (digitalRead(SOUND_PIN)==LOW){
-	//Serial.print("son detecte");
-	//Serial.println(scompt);
-	//scompt =scompt +1;
-	effetvis.strobe(COL_GREEN, 5 , 1, 0, LED_COUNT);
-}
-*/
 butRed.tick();
 butBlue.tick();
 
 afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
 
 // Surveillance des demandes de mise à jour en OTA
-ArduinoOTA.handle();
+//ArduinoOTA.handle();
 
 if (pause == false) 
 {
@@ -336,7 +329,6 @@ if (pause == false)
 			equipeBleu.win();
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
-
 		}
 		else equipeBleu.goal();
 	}
@@ -357,26 +349,17 @@ if (pause == false)
 	}
 	cTime = millis();
 	if (cTime > effetson.getLastSound() + periodeSon) {
-
-	/*if (cTime > equipeBleu.getNextCheer(periodeCheerMin, periodeCheerMax)+ periodeSon)
-		{
-			equipeBleu.cheer(); // les bleus jouent a domicile
-		}
-	else if (cTime > equipeRouge.getNextCheer(periodeCheerMin, periodeCheerMax)+ periodeSon)
-		{
-			equipeRouge.cheer();
-		}*/
-	if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
+		if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
 		{
 			equipeBlanche.cheer();//on motive le groupe equipe neutre
 		}
 	}
 }
-else if (cTime > timepause+10000) { //fin pause
+else if (cTime > timepause+2000) { //fin pause
 	pause = false;
 	timepause = 0;
 	equipeRouge.resetScore();
 	equipeBleu.resetScore();
-}
+	}
 
 }

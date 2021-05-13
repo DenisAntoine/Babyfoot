@@ -1,6 +1,6 @@
 #ifndef DEF_EQUIPE
 #define DEF_EQUIPE
-#include <Adafruit_ADS1015.h>
+#include <Adafruit_ADS1X15.h>
 #include "EffetSonore.h"
 #include "EffetVisuel.h"
 

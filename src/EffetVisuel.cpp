@@ -14,8 +14,7 @@ void EffetVisuel::flash(uint32_t color, uint16_t pstart, uint16_t pend) {
   for(int i=pstart; i<pend; i++) { // For each pixel in strip...
     _strip->setPixelColor(i, color);         //  Set pixel's color (in RAM)
     _strip->show();                          //  Update strip to match
-    //delay(wait);                           //  Pause for a moment
-  }
+     }
 }
 
 void EffetVisuel::strobe(uint32_t color, int strobecount, int flashdelay, uint16_t pstart, uint16_t pend) {
@@ -44,7 +43,7 @@ void EffetVisuel::goal(uint32_t color)
 void EffetVisuel::win(uint32_t color)
 {
   this-> theaterChase(color, 100);
-  this-> rainbowFade2White(50, 1, 1);
+  this-> rainbowFade2White(5, 1, 1);
   
 } //à definir
 
