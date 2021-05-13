@@ -6,13 +6,12 @@ Equipe::Equipe(int goalPin)
 	m_score=0; //score initial à 0
 }
 
-Equipe::Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu)
+Equipe::Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son)
 {
 	m_goalpin = goalPin;
 	m_color = color;
 	_ads1115 = _ads;
 	_EffetSon = _son;
-	_EffetVis = _visu;
 	m_score=0; //score initial à 0
 	m_lastGoal = millis();
 	m_lastCheer = millis();
@@ -79,19 +78,16 @@ void Equipe::cheer()
 	//Serial.println("cheer");
 	m_lastCheer= millis();
 	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
-	_EffetVis -> cheer(m_color); // lance effet visuel
 }
+
 void Equipe::goal()
 {
 	m_lastGoal = millis();
 	_EffetSon -> play(m_folderGoal); // passe le repertoire à jouer
-	_EffetVis-> goal(m_color); // lance effet visuel 
 }
 void Equipe::win()
 {
 	_EffetSon -> play(m_folderWin); // passe le repertoire à jouer
-	_EffetVis -> win(m_color); // lance effet visuel 
-	
 }
 
 void Equipe::setPin(int pin)
@@ -118,10 +114,6 @@ void Equipe::setEffetSonore(EffetSonore *son)
 	_EffetSon = son;
 }
 
-void Equipe::setEffetVisuel(EffetVisuel *vis)
-{
-	_EffetVis = vis;
-}
 
 unsigned long Equipe::getNextCheer(unsigned long tmin, unsigned long tmax){
 	unsigned long ctime = millis();

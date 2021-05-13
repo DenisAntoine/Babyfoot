@@ -24,11 +24,12 @@
 #else
 #include <WebServer.h>
 #endif
-#include <WiFiManager.h>  
+#include <WiFiManager.h>
 */
 
-#include "Equipe.h"
 
+#include "Equipe.h"
+#include "EffetVisuel.h"
 /*******************************************************
 / Pinout
 / TX -> 
@@ -114,9 +115,9 @@ const uint16_t GOALDETECT = 3000; //sensibilité de detection
 EffetSonore effetson(&myDFPlayer);
 EffetVisuel effetvis(&strip);
 
-Equipe equipeBleu(1,COL_BLUE, &ads1115, &effetson, &effetvis); // test du constructeur complet
-Equipe equipeRouge(0,COL_RED, &ads1115, &effetson, &effetvis);
-Equipe equipeBlanche(2,COL_WHITE, &ads1115, &effetson, &effetvis);
+Equipe equipeBleu(1,COL_BLUE, &ads1115, &effetson); // test du constructeur complet
+Equipe equipeRouge(0,COL_RED, &ads1115, &effetson);
+Equipe equipeBlanche(2,COL_WHITE, &ads1115, &effetson);
 
 /*******************************************************
 / Definition Boutons												
@@ -294,11 +295,8 @@ void setup() {
 	Serial.println("equipes initialisees");
 
 	myDFPlayer.play(1);
-	effetvis.flash(COL_RED, 1, 30);
-	effetvis.flash(COL_BLUE, 30, LED_COUNT);
-	effetvis.rainbow(10);
-	delay(1000);
-
+	effetvis.cheer();
+	
 	Serial.println();
 	Serial.println("fin setup");
 }
@@ -307,13 +305,14 @@ void loop() {
 
 unsigned long cTime = millis();
 
+//ArduinoOTA.handle();// Surveillance des demandes de mise à jour en OTA
 butRed.tick();
 butBlue.tick();
+effetvis.tick();
 
 afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
 
-// Surveillance des demandes de mise à jour en OTA
-//ArduinoOTA.handle();
+
 
 if (pause == false) 
 {
@@ -327,12 +326,16 @@ if (pause == false)
 			//Serial.println();
 			//Serial.println("Victoire Bleus");
 			equipeBleu.win();
+			effetvis.win(COL_BLUE);
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
 		}
-		else equipeBleu.goal();
+		else {
+			equipeBleu.goal();
+			effetvis.goal(COL_BLUE);
+		}
 	}
-	if(equipeRouge.testgoal(GOALDETECT *2.8) == true)
+	if(equipeRouge.testgoal(GOALDETECT) == true)
 	{
 		//Serial.println();
 	    //Serial.println(F("But Rouge !"));
@@ -342,16 +345,21 @@ if (pause == false)
 			//Serial.println();
 			//Serial.println("Victoire Rouge");
 			equipeRouge.win();
+			effetvis.win(COL_RED);
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
 		}
-		else equipeRouge.goal();
+		else {
+			equipeRouge.goal();
+			effetvis.goal(COL_RED);
+		}
 	}
 	cTime = millis();
 	if (cTime > effetson.getLastSound() + periodeSon) {
 		if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
 		{
 			equipeBlanche.cheer();//on motive le groupe equipe neutre
+			effetvis.cheer();
 		}
 	}
 }

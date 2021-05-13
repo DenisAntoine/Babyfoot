@@ -2,7 +2,6 @@
 #define DEF_EQUIPE
 #include <Adafruit_ADS1X15.h>
 #include "EffetSonore.h"
-#include "EffetVisuel.h"
 
 #define MAXSCORE 11
 
@@ -11,7 +10,7 @@ class Equipe
     public:
     	
 		Equipe(int goalPin); //Constructeur
-		Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son, EffetVisuel* _visu);
+		Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son);
 		int getScore() const;
 		int getPin() const;
 		void increaseScore();
@@ -26,7 +25,6 @@ class Equipe
 		void setFolderGoal(int folder);
 		void setFolderWin(int folder);
 		void setEffetSonore(EffetSonore *son);
-		void setEffetVisuel(EffetVisuel *vis);
 		unsigned long getLastGoal();
 		unsigned long getLastCheer();
 		unsigned long getNextCheer(unsigned long tmin, unsigned long tmax); //renvoi le timestamp du prochain encouragement tmin/tmax  = periodes mini /maxi
@@ -42,7 +40,6 @@ class Equipe
 		unsigned long m_lastCheer;
 		Adafruit_ADS1115 *_ads1115;
 		EffetSonore *_EffetSon;
-		EffetVisuel *_EffetVis;
-};
+	};
 
 #endif

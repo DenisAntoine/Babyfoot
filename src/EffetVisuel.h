@@ -2,29 +2,48 @@
 #define DEF_EFFETVIS
 
 #include <Adafruit_NeoPixel.h>
+enum OpState {
+OFF = 0,
+WIPE =1,
+FLASH =2,
+THEAC = 3,
+STROB = 4,
+RAIN =5,
+};
 
 class EffetVisuel
 {
     public:
     	
 		EffetVisuel(Adafruit_NeoPixel* strip); //
-		void flash(uint32_t color, uint16_t pstart, uint16_t pend);
-		void cheer(uint32_t color);
+		
+		//new
+		void tick();
+		void colorWipe(uint32_t c, uint16_t cycle);
+		void theaterChase(uint32_t c, uint16_t cycle);
+		void strobe(uint32_t c, uint16_t cycle);
+		void flash(uint32_t c, uint16_t cycle);
+		void off();
+		void rainbow(uint16_t cycle);
+		OpState getStripState();
+		void setStripState(OpState state);
+		uint16_t getStripCycle();
+		uint32_t wheel(byte WheelPos);
 		void goal(uint32_t color);
 		void win(uint32_t color);
-	    void theaterChase(uint32_t color, int wait);
-		void rainbow(int wait);
-		void theaterChaseRainbow(int wait);
-		void whiteOverRainbow(int whiteSpeed, int whiteLength);
-		void pulseWhite(uint8_t wait);
-		void rainbowFade2White(int wait, int rainbowLoops, int whiteLoops);
-		void strobe(uint32_t color, int strobecount, int flashdelay, uint16_t pstart, uint16_t pend);
-		
+		void cheer();
+		void setPixelInterval(unsigned long pixelsInterval);
+		void setColor(uint32_t color);
 
     private:
-	
-		// pointeur pour le strip
 		Adafruit_NeoPixel* _strip;
+		uint16_t _currentPixel = 0;
+		uint16_t _NumPixel = 0;
+		OpState _stripState;
+		uint16_t _NbCycle = 0;
+		unsigned long _pixelsInterval=100;
+		unsigned long _previousMillis=0;
+		uint32_t _color;
 		
 };
 
