@@ -14,7 +14,7 @@ EffetVisuel::EffetVisuel(Adafruit_NeoPixel* strip)
 void EffetVisuel::goal(uint32_t color)
 {
   _stripState = STROB;
-  this->setPixelInterval(1);
+  this->setPixelInterval(10);
   this->setColor(color);
 
 } //à definir
@@ -28,6 +28,7 @@ void EffetVisuel::win(uint32_t color)
 } //à definir
 void EffetVisuel::cheer()
 {
+  this->setPixelInterval(10);
   _stripState = RAIN;
 
 } //à definir
@@ -77,7 +78,7 @@ void EffetVisuel::tick(){
           this->strobe(_color, 50);
         break;
         case RAIN:
-          this->rainbow(1);
+          this->rainbow(10);
         break;
     
     }

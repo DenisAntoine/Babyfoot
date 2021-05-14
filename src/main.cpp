@@ -9,7 +9,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_LEDBackpack.h>
 
-/*
+
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
@@ -25,7 +25,7 @@
 #include <WebServer.h>
 #endif
 #include <WiFiManager.h>
-*/
+
 
 
 #include "Equipe.h"
@@ -217,36 +217,36 @@ void setup() {
 	Serial.println();
 	Serial.println("strip demarre");
 	
-/*
+
 
 	WiFiManager wifiManager;
 	wifiManager.autoConnect("AutoConnectAP");
 
 	while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    //Serial.print(".");
+    Serial.print(".");
   	}
   
 	// on affiche l'adresse IP attribuée pour le serveur DSN
-	//Serial.println("");
-	//Serial.print("IP address: ");
-	//Serial.println(WiFi.localIP());
+	Serial.println("");
+	Serial.print("IP address: ");
+	Serial.println(WiFi.localIP());
   
 	//OTA
 	// Hostname defaults to esp8266-[ChipID]
-	//ArduinoOTA.setHostname("ESPTEST");
-	//ArduinoOTA.begin();
+	ArduinoOTA.setHostname("ESPTEST");
+	ArduinoOTA.begin();
 	// Fin OTA 
-	//Serial.println("");
-	//Serial.print("code modifie par OTA");
-*/
+	Serial.println("");
+	Serial.print("code modifie par OTA");
+
 // Initialize DFPlayer on softwareserial
 	
 	Serial.println();
 	Serial.println(F("DFRobot DFPlayer Mini Demo"));
 	Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
 
-	if (!myDFPlayer.begin(mySoftwareSerial)) {  //Utilisation de  softwareSerial pour communiquer
+	/*if (!myDFPlayer.begin(mySoftwareSerial)) {  //Utilisation de  softwareSerial pour communiquer
 	    Serial.println(F("Pb communication:"));
 	    Serial.println(F("1.SVP verifier connexion serie!"));
 	    Serial.println(F("2.SVP verifier SDcard !"));
@@ -257,7 +257,7 @@ void setup() {
 	myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD); // lecture sur carte SD
 	myDFPlayer.volume(25);  //Set volume value. From 0 to 30
 	
-	delay(1000);
+	delay(1000);*/
 	
 	Serial.println(F("DFPlayer Mini En ligne."));
 	
@@ -294,8 +294,10 @@ void setup() {
 	Serial.println();
 	Serial.println("equipes initialisees");
 
-	myDFPlayer.play(1);
-	effetvis.cheer();
+	//myDFPlayer.play(1);
+	
+	//effetvis.cheer();
+	delay(1000);
 	
 	Serial.println();
 	Serial.println("fin setup");
@@ -306,9 +308,9 @@ void loop() {
 unsigned long cTime = millis();
 
 //ArduinoOTA.handle();// Surveillance des demandes de mise à jour en OTA
-butRed.tick();
-butBlue.tick();
-effetvis.tick();
+//butRed.tick();
+//butBlue.tick();
+//effetvis.tick();
 
 afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
 
@@ -319,51 +321,53 @@ if (pause == false)
 	//printscores(); // debug
 	if(equipeBleu.testgoal(GOALDETECT ) == true)
 	{
-		//Serial.println();
-	    //Serial.println(F("But bleu !"));
+		Serial.println();
+	    Serial.println(F("But bleu !"));
 		afficherScore(equipeRouge.getScore(),equipeBleu.getScore()); //affichage immediat
 		if ((equipeBleu.getScore() >= SCOREVICTOIRE) && (equipeBleu.getScore() - SCOREECART >= equipeRouge.getScore())){
-			//Serial.println();
-			//Serial.println("Victoire Bleus");
-			equipeBleu.win();
-			effetvis.win(COL_BLUE);
+			Serial.println();
+			Serial.println("Victoire Bleus");
+			//equipeBleu.win();
+			//effetvis.win(COL_BLUE);
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
 		}
 		else {
-			equipeBleu.goal();
-			effetvis.goal(COL_BLUE);
+			//equipeBleu.goal();
+			//effetvis.goal(COL_BLUE);
 		}
 	}
 	if(equipeRouge.testgoal(GOALDETECT) == true)
 	{
-		//Serial.println();
-	    //Serial.println(F("But Rouge !"));
+		Serial.println();
+	    Serial.println(F("But Rouge !"));
 		afficherScore(equipeRouge.getScore(),equipeBleu.getScore());//affichage immediat
 		if ((equipeRouge.getScore() >= SCOREVICTOIRE) && (equipeRouge.getScore() - SCOREECART >= equipeBleu.getScore()))
 		{
-			//Serial.println();
-			//Serial.println("Victoire Rouge");
-			equipeRouge.win();
-			effetvis.win(COL_RED);
+			Serial.println();
+			Serial.println("Victoire Rouge");
+			//equipeRouge.win();
+			//effetvis.win(COL_RED);
 			pause = true; // met en pause action sur un bouton pour repartir
 			timepause = millis();
 		}
 		else {
-			equipeRouge.goal();
-			effetvis.goal(COL_RED);
+			//equipeRouge.goal();
+			//effetvis.goal(COL_RED);
 		}
 	}
 	cTime = millis();
 	if (cTime > effetson.getLastSound() + periodeSon) {
 		if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
 		{
-			equipeBlanche.cheer();//on motive le groupe equipe neutre
-			effetvis.cheer();
+			//equipeBlanche.cheer();//on motive le groupe equipe neutre
+			//effetvis.cheer();
+			Serial.println();
+			Serial.println("cheer");
 		}
 	}
 }
-else if (cTime > timepause+2000) { //fin pause
+else if (cTime > timepause+5000) { //fin pause
 	pause = false;
 	timepause = 0;
 	equipeRouge.resetScore();
