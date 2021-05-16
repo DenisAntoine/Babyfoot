@@ -154,30 +154,22 @@ void EffetVisuel::flash(uint32_t c, uint16_t cycle){
   }
 }
 void EffetVisuel::rainbow(uint16_t cycle) {
-  _stripState = RAIN;
   
-  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
-    for(int i=0; i<_NumPixel; i++) { // For each pixel in strip...
-      // Offset pixel hue by an amount to make one full revolution of the
-      // color wheel (range of 65536) along the length of the strip
-      // (strip.numPixels() steps):
-      int pixelHue = firstPixelHue + (i * 65536L / _NumPixel);
-      // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-      // optionally add saturation and value (brightness) (each 0 to 255).
-      // Here we're using just the single-argument hue variant. The result
-      // is passed through strip.gamma32() to provide 'truer' colors
-      // before assigning to each pixel:
-      _strip->setPixelColor(i, _strip->gamma32(_strip->ColorHSV(pixelHue)));
+  _stripState = RAIN;
+  uint16_t i;
+  for(i=0; i< _NumPixel; i++) {
+      _strip->setPixelColor(i, wheel(((i * 256 / _NumPixel) + _currentPixel) & 255));
     }
-    _strip->show(); // Update strip with new contents
-    _NbCycle++;
-    if (_NbCycle == cycle)
+  _strip->show();
+  _currentPixel++;
+    
+  _NbCycle++;
+  if (_NbCycle == cycle)
     {
     _NbCycle=0;
     _currentPixel = 0;
     _stripState = OFF;
     }
-  }
 }
 
 void EffetVisuel::strobe(uint32_t c, uint16_t cycle) {

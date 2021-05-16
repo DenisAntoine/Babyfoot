@@ -240,38 +240,36 @@ void setup() {
 	Serial.println("");
 	Serial.print("code modifie par OTA");
 
-// Initialize DFPlayer on softwareserial
-	
-	Serial.println();
+//Effets Sonore
+  Serial.println();
 	Serial.println(F("DFRobot DFPlayer Mini Demo"));
 	Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
-
-	/*if (!myDFPlayer.begin(mySoftwareSerial)) {  //Utilisation de  softwareSerial pour communiquer
-	    Serial.println(F("Pb communication:"));
+	
+	int attempt = 0;
+	while (!myDFPlayer.begin(mySoftwareSerial) && attempt<5)//5 attempts
+	{
+		attempt++;
+		Serial.println(F("Pb communication:"));
 	    Serial.println(F("1.SVP verifier connexion serie!"));
 	    Serial.println(F("2.SVP verifier SDcard !"));
-	    while(true);
-	  }
-    
- 	myDFPlayer.setTimeOut(500); // Définit un temps de time out sur la communication série à 500 ms
-	myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD); // lecture sur carte SD
-	myDFPlayer.volume(25);  //Set volume value. From 0 to 30
-	
-	delay(1000);*/
-	
-	Serial.println(F("DFPlayer Mini En ligne."));
-	
-	
-
+	    delay(1000);
+	}
+	if (attempt<5) {
+		Serial.println(F("Du gros son!!!"));
+		myDFPlayer.setTimeOut(500); // Définit un temps de time out sur la communication série à 500 ms
+  		myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD); // lecture sur carte SD
+		myDFPlayer.volume(25);  //Set volume value. From 0 to 30
+		delay(1000);
+	}
 // initialize Buttons
 
 	butRed.attachClick(redClick);
 	butBlue.attachClick(blueClick);
 	butRed.attachLongPressStop(redLong);
 	butBlue.attachLongPressStop(blueLong);
-	// Convertisseur analogiques pour buts
+
+// Convertisseur analogiques pour buts
 	ads1115.begin();
-	
 	Serial.println();
 	Serial.println("ADS1115 demarre");
 	
@@ -294,9 +292,8 @@ void setup() {
 	Serial.println();
 	Serial.println("equipes initialisees");
 
-	//myDFPlayer.play(1);
-	
-	//effetvis.cheer();
+	myDFPlayer.play(1);
+
 	delay(1000);
 	
 	Serial.println();
