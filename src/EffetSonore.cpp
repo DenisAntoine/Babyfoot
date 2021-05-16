@@ -8,6 +8,8 @@ EffetSonore::EffetSonore(DFRobotDFPlayerMini* dfp)
 	
 }
 
+
+
 //test de la methode play
 void EffetSonore::play(int folder)
 {
@@ -22,7 +24,7 @@ long filecount = _DFPlayer->readFileCountsInFolder(folder);
 delay(100);
 //Serial.print("Joue : ");
 //Serial.println(n);
-m_lastplay += 1;
+m_lastplay += random(1,3);
 m_lastplay = m_lastplay % 5;
 m_lastSound =millis(); // last play
 _DFPlayer->playFolder(folder, m_lastplay); //play aleatoire dans folder

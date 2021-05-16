@@ -1,18 +1,19 @@
 #ifndef DEF_EQUIPE
 #define DEF_EQUIPE
-#include <Adafruit_ADS1X15.h>
-#include "EffetSonore.h"
-
 #define MAXSCORE 11
+#include <Arduino.h>
 
 class Equipe
 {
     public:
     	
 		Equipe(int goalPin); //Constructeur
-		Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son);
+		Equipe(int goalPin, uint32_t color);
 		int getScore() const;
 		int getPin() const;
+		int getFolderCheer();
+		int getFolderGoal();
+		int getFolderWin();
 		void increaseScore();
 		void decreaseScore();
 		void resetScore();
@@ -24,7 +25,9 @@ class Equipe
 		void setFolderCheer(int folder);
 		void setFolderGoal(int folder);
 		void setFolderWin(int folder);
-		void setEffetSonore(EffetSonore *son);
+		void setColor(uint32_t color);
+		uint32_t getColor();
+
 		unsigned long getLastGoal();
 		unsigned long getLastCheer();
 		unsigned long getNextCheer(unsigned long tmin, unsigned long tmax); //renvoi le timestamp du prochain encouragement tmin/tmax  = periodes mini /maxi
@@ -38,8 +41,6 @@ class Equipe
 		uint32_t m_color;//couleur associee
 		unsigned long m_lastGoal;
 		unsigned long m_lastCheer;
-		Adafruit_ADS1115 *_ads1115;
-		EffetSonore *_EffetSon;
 	};
 
 #endif

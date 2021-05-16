@@ -1,20 +1,29 @@
 #include "EffetVisuel.h"
 
-
-
 EffetVisuel::EffetVisuel(Adafruit_NeoPixel* strip)
 {
 	_strip = strip;
   _NumPixel = strip->numPixels();
   _stripState = OFF;
   _NbCycle=0;
+  _pixelsInterval=100;
+	_previousMillis=0;
+  _NbCycle=1;
   _color = strip->Color(127, 127, 127);
-  
 }
+void EffetVisuel::begin(){
+  _strip->begin();
+  _strip->show();
+  _strip->setBrightness(100);
+}
+
+
 void EffetVisuel::goal(uint32_t color)
 {
+  _strip->clear();
+  _currentPixel = 0;
   _stripState = STROB;
-  this->setPixelInterval(10);
+  this->setPixelInterval(1);
   this->setColor(color);
 
 } //à definir
@@ -29,7 +38,19 @@ void EffetVisuel::win(uint32_t color)
 void EffetVisuel::cheer()
 {
   this->setPixelInterval(10);
-  _stripState = RAIN;
+  this->setColor(wheel(random(1,255)));
+  switch (random(1,3)){
+    case 1:
+      _stripState = WIPE;
+    break;
+    case 2:
+      _stripState = THEAC;
+    break;
+    case 3:
+      _stripState = RAIN;
+    break;
+  }
+  
 
 } //à definir
 
@@ -58,7 +79,7 @@ void EffetVisuel::setColor(uint32_t color){
 
 
 void EffetVisuel::tick(){
-  if ((unsigned long)(millis() - _previousMillis) >= _pixelsInterval) {
+  if ((millis() - _previousMillis) >= _pixelsInterval) {
     _previousMillis=millis();
     
     switch (_stripState){
@@ -66,6 +87,7 @@ void EffetVisuel::tick(){
           this->off();
         break;
         case WIPE:
+          
           this->colorWipe(_color, 1);
         break;
         case THEAC:
@@ -75,10 +97,11 @@ void EffetVisuel::tick(){
           this->flash(_color, 1);
         break;
         case STROB:
-          this->strobe(_color, 50);
+          this->strobe(_color, 10);
         break;
         case RAIN:
-          this->rainbow(10);
+          //Serial.println("Tick Rain");
+          this->rainbow(1);
         break;
     
     }
@@ -101,7 +124,7 @@ void EffetVisuel::colorWipe(uint32_t c, uint16_t cycle){
     _currentPixel = 0;
     _NbCycle++;
   }
-  if (_NbCycle == cycle)
+  if (_NbCycle >= cycle)
   {
     _NbCycle=0;
     _currentPixel = 0;
@@ -125,7 +148,7 @@ void EffetVisuel::theaterChase(uint32_t c, uint16_t cycle){
     _currentPixel = 0;
     _NbCycle++;
   }
-  if (_NbCycle == cycle)
+  if (_NbCycle >= cycle)
   {
     _NbCycle=0;
     _currentPixel = 0;
@@ -145,7 +168,7 @@ void EffetVisuel::flash(uint32_t c, uint16_t cycle){
     _NbCycle++;
     
   }
-  if (_NbCycle == cycle)
+  if (_NbCycle >= cycle)
   {
     _NbCycle=0;
     _currentPixel = 0;
@@ -154,7 +177,6 @@ void EffetVisuel::flash(uint32_t c, uint16_t cycle){
   }
 }
 void EffetVisuel::rainbow(uint16_t cycle) {
-  
   _stripState = RAIN;
   uint16_t i;
   for(i=0; i< _NumPixel; i++) {
@@ -162,14 +184,15 @@ void EffetVisuel::rainbow(uint16_t cycle) {
     }
   _strip->show();
   _currentPixel++;
-    
   _NbCycle++;
-  if (_NbCycle == cycle)
+
+  if (_NbCycle >= cycle)
     {
     _NbCycle=0;
     _currentPixel = 0;
     _stripState = OFF;
     }
+  
 }
 
 void EffetVisuel::strobe(uint32_t c, uint16_t cycle) {
@@ -183,11 +206,11 @@ void EffetVisuel::strobe(uint32_t c, uint16_t cycle) {
   _stripState = STROB;
   _currentPixel++;
   
-  if(_currentPixel == _NumPixel){
+  if(_currentPixel >= _NumPixel){
     _currentPixel = 0;
     _NbCycle++;
   }
-  if (_NbCycle == cycle)
+  if (_NbCycle >= cycle)
   {
     _NbCycle=0;
     _currentPixel = 0;

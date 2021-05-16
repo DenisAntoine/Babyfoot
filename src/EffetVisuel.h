@@ -1,6 +1,6 @@
 #ifndef DEF_EFFETVIS
 #define DEF_EFFETVIS
-
+#include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 enum OpState {
 OFF = 0,
@@ -18,6 +18,7 @@ class EffetVisuel
 		EffetVisuel(Adafruit_NeoPixel* strip); //
 		
 		//new
+		void begin();
 		void tick();
 		void colorWipe(uint32_t c, uint16_t cycle);
 		void theaterChase(uint32_t c, uint16_t cycle);

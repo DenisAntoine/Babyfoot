@@ -4,29 +4,17 @@ Equipe::Equipe(int goalPin)
 {
 	m_goalpin = goalPin;
 	m_score=0; //score initial à 0
-}
-
-Equipe::Equipe(int goalPin, uint32_t color, Adafruit_ADS1115* _ads, EffetSonore* _son)
-{
-	m_goalpin = goalPin;
-	m_color = color;
-	_ads1115 = _ads;
-	_EffetSon = _son;
-	m_score=0; //score initial à 0
 	m_lastGoal = millis();
 	m_lastCheer = millis();
 }
 
-bool Equipe::testgoal(uint16_t seuildetect){
-	bool goal = false;
-	//Serial.println(_ads1115 -> readADC_SingleEnded(m_goalpin));
-	if (_ads1115 -> readADC_SingleEnded(m_goalpin) < seuildetect){
-		goal = true;
-		
-		this -> increaseScore(); // comptabilise le but
-		//Serial.println("but detecte");
-		}
-	return goal;
+Equipe::Equipe(int goalPin, uint32_t color)
+{
+	m_goalpin = goalPin;
+	m_color = color;
+	m_score=0; //score initial à 0
+	m_lastGoal = millis();
+	m_lastCheer = millis();
 }
 
 //acesseur 
@@ -47,6 +35,25 @@ unsigned long Equipe::getLastCheer(){
 	return m_lastCheer;
 }
 
+uint32_t Equipe::getColor(){
+	return m_color;
+}
+
+int Equipe::getFolderCheer(){
+	return m_folderCheer;
+}
+int Equipe::getFolderGoal(){
+	return m_folderGoal;
+	}
+int Equipe::getFolderWin(){
+	return m_folderWin;
+	}
+
+
+
+void Equipe::setColor(uint32_t color){
+	m_color = color;
+}
 
 
 
@@ -77,17 +84,15 @@ void Equipe::cheer()
 {
 	//Serial.println("cheer");
 	m_lastCheer= millis();
-	_EffetSon -> play(m_folderCheer); // passe le repertoire à jouer
 }
 
 void Equipe::goal()
 {
 	m_lastGoal = millis();
-	_EffetSon -> play(m_folderGoal); // passe le repertoire à jouer
 }
 void Equipe::win()
 {
-	_EffetSon -> play(m_folderWin); // passe le repertoire à jouer
+
 }
 
 void Equipe::setPin(int pin)
@@ -108,10 +113,6 @@ void Equipe::setFolderGoal(int folder)
 void Equipe::setFolderWin(int folder)
 {
 	m_folderWin = folder;
-}
-void Equipe::setEffetSonore(EffetSonore *son)
-{
-	_EffetSon = son;
 }
 
 
