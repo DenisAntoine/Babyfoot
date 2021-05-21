@@ -109,6 +109,7 @@ Equipe equipeRouge(0,COL_RED);
 
 OneButton butRed(BUTRED_PIN, true);
 OneButton butBlue(BUTBLUE_PIN, true);
+OneButton butSound(SOUND_PIN, true);
 // boutton rouge
 void redClick()
 {
@@ -129,6 +130,20 @@ pause = false;// action sur bouton enleve la pause
 equipeBleu.increaseScore(); // appui court score +1
 //printscores();
 afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
+}
+// boutton sound
+void soundClick() // plus 5 sur volume
+{
+pause = false;// action sur bouton enleve la pause
+effetson.increaseVolume(5);  //Set volume value. From 0 to 30
+
+}
+// boutton sound
+void soundLong() // plus 5 sur volume
+{
+pause = false;// action sur bouton enleve la pause
+myDFPlayer.volume(0);  //Set volume value. From 0 to 30
+
 }
 void redLong(){
 	pause = false;// action sur bouton enleve la pause
@@ -163,10 +178,11 @@ void setup() {
 	butBlue.attachClick(blueClick);
 	butRed.attachLongPressStop(redLong);
 	butBlue.attachLongPressStop(blueLong);
-
+	butSound.attachClick(soundClick);
+	butSound.attachDoubleClick(soundLong);
 
   /*Strip*/
-  effetvis.begin();
+  	effetvis.begin();
 	Serial.println();
 	Serial.println("strip demarre");
   
@@ -301,6 +317,7 @@ void loop() {
   effetvis.tick();
   butRed.tick();
   butBlue.tick();
+  butSound.tick();
 
   
 }

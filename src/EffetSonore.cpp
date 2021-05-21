@@ -5,10 +5,26 @@ EffetSonore::EffetSonore(DFRobotDFPlayerMini* dfp)
 	_DFPlayer = dfp;
 	m_lastSound =millis();
 	m_lastplay=1;
+	m_volume=25;
 	
 }
+void EffetSonore::increaseVolume(int increment){
+	m_volume =m_volume+increment;
+	if (m_volume>30){
+		m_volume =0;
+	}
+	_DFPlayer->volume(m_volume);
+}
 
+void EffetSonore::setVolume(int volume){
+	
+	m_volume=volume;
 
+	if (m_volume>30){
+		m_volume =0;
+	}
+	_DFPlayer->volume(m_volume);
+}
 
 //test de la methode play
 void EffetSonore::play(int folder)

@@ -11,6 +11,10 @@ class EffetSonore
 		EffetSonore(DFRobotDFPlayerMini* dfp); //
 		
 		void play(int folder);
+		void increaseVolume(int increment);
+		void setVolume(int volume);
+		
+
 		unsigned long getLastSound();
 	
 	
@@ -20,6 +24,8 @@ class EffetSonore
 		DFRobotDFPlayerMini* _DFPlayer;
 		unsigned long m_lastSound;
 		int m_lastplay;
+		int m_volume;
+
 };
 
 #endif
