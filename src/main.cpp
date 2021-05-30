@@ -36,7 +36,7 @@
 #define SSRX_PIN   	D4
 #define SSTX_PIN  	D3
 
-const int SCOREVICTOIRE = 5;
+const int SCOREVICTOIRE = 7;
 const int SCOREECART = 2;
 bool pause = false;
 
@@ -75,7 +75,13 @@ DFRobotDFPlayerMini myDFPlayer;
 Adafruit_ADS1115 ads1115;
 const uint16_t GOALDETECT = 9500; //sensibilité de detection
 
-
+// *****************************************************
+// Equipes, effets sonores et visuels
+// *****************************************************/
+EffetSonore effetson(&myDFPlayer);
+EffetVisuel effetvis(&strip);
+Equipe equipeBleu(1,COL_BLUE);
+Equipe equipeRouge(0,COL_RED);
 
 
 /*******************************************************
@@ -93,13 +99,16 @@ void afficherScore(int score1, int score2){
 	scoreboard.writeDisplay();
 }
 
-// *****************************************************
-// Equipes, effets sonores et visuels
-// *****************************************************/
-EffetSonore effetson(&myDFPlayer);
-EffetVisuel effetvis(&strip);
-Equipe equipeBleu(1,COL_BLUE);
-Equipe equipeRouge(0,COL_RED);
+void afficherVolume(){
+	int vol = effetson.getVolume();
+	scoreboard.clear();
+	scoreboard.writeDigitRaw(0,0X6D);// s
+	if ((vol / 10) % 10 > 0 ) scoreboard.writeDigitNum(3, (vol / 10) % 10, false);
+	scoreboard.writeDigitNum(4, vol %10, false);
+	scoreboard.writeDisplay();
+}
+
+
 
 /*******************************************************
 / Definition Boutons												
@@ -135,7 +144,8 @@ afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
 void soundClick() // plus 5 sur volume
 {
 pause = false;// action sur bouton enleve la pause
-effetson.increaseVolume(5);  //Set volume value. From 0 to 30
+effetson.increaseVolume(10);  //Set volume value. From 0 to 30
+afficherVolume();
 
 }
 // boutton sound
@@ -143,7 +153,7 @@ void soundLong() // plus 5 sur volume
 {
 pause = false;// action sur bouton enleve la pause
 myDFPlayer.volume(0);  //Set volume value. From 0 to 30
-
+afficherVolume();
 }
 void redLong(){
 	pause = false;// action sur bouton enleve la pause
@@ -301,6 +311,7 @@ void loop() {
 		}
 		periodeSon = random(30000, 80000);
 		if (cTime > effetson.getLastSound() + periodeSon) {
+			afficherScore(equipeRouge.getScore(),equipeBleu.getScore());
 			if (cTime > max(equipeBleu.getLastGoal(), equipeRouge.getLastGoal()) + periodeSon) // pas de but depuis x sec
 				{
 				//equipeBlanche.cheer();//on motive le groupe equipe neutre
