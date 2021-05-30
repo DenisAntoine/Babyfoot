@@ -13,7 +13,7 @@ class EffetSonore
 		void play(int folder);
 		void increaseVolume(int increment);
 		void setVolume(int volume);
-		
+		int getVolume();
 
 		unsigned long getLastSound();
 	

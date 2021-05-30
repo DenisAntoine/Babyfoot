@@ -26,6 +26,10 @@ void EffetSonore::setVolume(int volume){
 	_DFPlayer->volume(m_volume);
 }
 
+int EffetSonore::getVolume(){
+	return m_volume;
+}
+
 //test de la methode play
 void EffetSonore::play(int folder)
 {
